@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админ-панель</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #ecf0f1; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { text-align: center; }
+        .hidden { display: none; }
+        input[type="password"] { width: 70%; padding: 10px; font-size: 16px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; background: #3498db; color: white; border: none; border-radius: 5px; }
+        .item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; }
+        .item:last-child { border-bottom: none; }
+        .item label { font-size: 18px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
+        .status-text { font-size: 14px; color: #7f8c8d; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login">
+            <h1>🔐 Вход для администратора</h1>
+            <div style="display: flex; gap: 10px;">
+                <input type="password" id="pass" placeholder="Введите пароль">
+                <button onclick="checkPass()">Войти</button>
+            </div>
+        </div>
+
+        <div id="adminPanel" class="hidden">
+            <h1>Управление наличием</h1>
+            <p style="text-align: center; color: #7f8c8d;">Ставьте галочку, если настойка есть в наличии</p>
+            <div id="list"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ВСТАВЬТЕ СЮДА ВАШ КОД ИЗ FIREBASE (точно такой же, как в index.html)
+        const firebaseConfig = {
+           apiKey: "AIzaSyDv0R4ruzfogyFkZ0RhfgA8-gJJ4FzcpCY",
+           authDomain: "ikraivodkispb.firebaseapp.com",
+           projectId: "ikraivodkispb",
+           storageBucket: "ikraivodkispb.firebasestorage.app",
+           messagingSenderId: "686031842638",
+           appId: "1:686031842638:web:454507ccaed8602833021f",
+           measurementId: "G-9LH7WLJ4DX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ПРИДУМАЙТЕ СВОЙ ПАРОЛЬ ЗДЕСЬ
+        const ADMIN_PASSWORD = "admin123"; 
+
+        window.checkPass = function() {
+            const input = document.getElementById('pass').value;
+            if (input === ADMIN_PASSWORD) {
+                document.getElementById('login').classList.add('hidden');
+                document.getElementById('adminPanel').classList.remove('hidden');
+                loadAdminList();
+            } else {
+                alert("Неверный пароль!");
+            }
+        }
+
+        function loadAdminList() {
+            const listDiv = document.getElementById('list');
+            onSnapshot(collection(db, "tinctures"), (snapshot) => {
+                listDiv.innerHTML = '';
+                snapshot.forEach((document) => {
+                    const data = document.data();
+                    const item = document.createElement('div');
+                    item.className = 'item';
+                    item.innerHTML = `
+                        <span style="font-weight: bold;">${data.name}</span>
+                        <label>
+                            <input type="checkbox" ${data.isAvailable ? 'checked' : ''} 
+                                   onchange="toggleStatus('${document.id}', this.checked)">
+                            <span class="status-text">${data.isAvailable ? 'Есть' : 'Нет'}</span>
+                        </label>
+                    `;
+                    listDiv.appendChild(item);
+                });
+            });
+        }
+
+        window.toggleStatus = async function(id, isChecked) {
+            const ref = doc(db, "tinctures", id);
+            await updateDoc(ref, { isAvailable: isChecked });
+        }
+    </script>
+</body>
+</html>
