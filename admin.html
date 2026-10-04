@@ -67,26 +67,26 @@
             }
         }
 
-        function loadAdminList() {
-            const listDiv = document.getElementById('list');
-            onSnapshot(collection(db, "tinctures"), (snapshot) => {
-                listDiv.innerHTML = '';
-                snapshot.forEach((document) => {
-                    const data = document.data();
-                    const item = document.createElement('div');
-                    item.className = 'item';
-                    item.innerHTML = `
-                        <span style="font-weight: bold;">${data.name}</span>
-                        <label>
-                            <input type="checkbox" ${data.isAvailable ? 'checked' : ''} 
-                                   onchange="toggleStatus('${document.id}', this.checked)">
-                            <span class="status-text">${data.isAvailable ? 'Есть' : 'Нет'}</span>
-                        </label>
-                    `;
-                    listDiv.appendChild(item);
-                });
-            });
-        }
+function loadAdminList() {
+    const listDiv = document.getElementById('list');
+    onSnapshot(collection(db, "tinctures"), (snapshot) => {
+        listDiv.innerHTML = '';
+        snapshot.forEach((docSnap) => {
+            const data = docSnap.data();
+            const item = document.createElement('div');
+            item.className = 'item';
+            item.innerHTML = `
+                <span style="font-weight: bold;">${data.name}</span>
+                <label>
+                    <input type="checkbox" ${data.isAvailable ? 'checked' : ''} 
+                           onchange="toggleStatus('${docSnap.id}', this.checked)">
+                    <span class="status-text">${data.isAvailable ? 'Есть' : 'Нет'}</span>
+                </label>
+            `;
+            listDiv.appendChild(item);
+        });
+    });
+}
 
         window.toggleStatus = async function(id, isChecked) {
             const ref = doc(db, "tinctures", id);
