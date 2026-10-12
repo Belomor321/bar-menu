@@ -163,7 +163,9 @@ card.innerHTML = `
 
 // 👇 НОВОЕ: обработчик клика для выделения
 card.addEventListener('click', () => {
-    card.classList.toggle('selected');
+    if (t.isAvailable) {
+        card.classList.toggle('selected');
+    }
 });
         function updateCounter() {
     const count = document.querySelectorAll('.card.selected').length;
