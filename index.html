@@ -89,13 +89,6 @@
             background: #f0f0f0;
         }
 
-        .category-header .count {
-            font-size: 11px;
-            color: #bbbbbb;
-            letter-spacing: 1px;
-            font-weight: 400;
-        }
-
         .category-header .arrow {
             font-size: 10px;
             color: #999999;
@@ -177,7 +170,6 @@
             word-break: break-word;
         }
 
-        /* === ЦЕНА === */
         .price {
             font-size: 14px;
             font-weight: 600;
@@ -296,7 +288,6 @@
             }
         }
 
-        // Форматирует цену в вид "350 ₽"
         function formatPrice(price) {
             if (price === undefined || price === null || price === '') return '';
             return `${price} ₽`;
@@ -347,14 +338,10 @@
                 const section = document.createElement('div');
                 section.className = 'category-section';
 
-                const availableCount = grouped[cat].filter(t => t.isAvailable).length;
-                const totalCount = grouped[cat].length;
-
                 const header = document.createElement('h2');
                 header.className = 'category-header';
                 header.innerHTML = `
                     <span>${cat}</span>
-                    <span class="count">${availableCount}/${totalCount}</span>
                     <span class="arrow">▼</span>
                 `;
 
