@@ -65,7 +65,6 @@
             cursor: default;
         }
 
-        /* Центральный блок с названием и описанием — растягивается */
         .card-body {
             display: flex;
             flex-direction: column;
@@ -120,6 +119,28 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
             transform: translateY(-2px);
         }
+
+        /* === СТИЛИ КАТЕГОРИЙ === */
+        .category-section {
+            max-width: 1100px;
+            margin: 0 auto 40px auto;
+        }
+
+        .category-header {
+            font-size: 20px;
+            font-weight: 400;
+            color: #2c2c2c;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-align: center;
+            margin: 40px 0 20px 0;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .category-header:first-child {
+            margin-top: 0;
+        }
     </style>
 </head>
 <body>
@@ -127,10 +148,9 @@
         <img src="IMG_1224.png" alt="Логотип" style="max-width: 250px; height: auto;">
     </div>
     <div id="counter" style="text-align: center; color: #999999; font-size: 14px; margin-bottom: 20px;"></div>
-    <div id="app" class="grid"><div class="loading">Загрузка меню...</div></div>
+    <div id="app"><div class="loading">Загрузка меню...</div></div>
 
     <script type="module">
-        // ИМПОРТ FIREBASE
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -149,13 +169,14 @@
 
         const appDiv = document.getElementById('app');
 
-        // Функция обновления счётчика
+        // Порядок категорий на сайте
+        const categoryOrder = ["Фруктовые", "Ягодные", "Сливочные", "Овощные", "Эксперименты"];
+
         function updateCounter() {
             const count = document.querySelectorAll('.card.selected').length;
             document.getElementById('counter').textContent = count > 0 ? `Выбрано: ${count}` : '';
         }
 
-        // Следим за изменениями в базе в реальном времени
         onSnapshot(collection(db, "tinctures"), (snapshot) => {
             appDiv.innerHTML = '';
             updateCounter();
@@ -172,42 +193,75 @@
                 allTinctures.push({
                     name: data.name,
                     isAvailable: data.isAvailable,
-                    description: data.description || ''
+                    description: data.description || '',
+                    category: data.category || 'Прочее'
                 });
             });
 
-            // 2. Сортируем: сначала в наличии, потом закончившиеся
-            allTinctures.sort((a, b) => {
-                if (a.isAvailable === b.isAvailable) return 0;
-                return a.isAvailable ? -1 : 1;
-            });
-
-            // 3. Выводим карточки
+            // 2. Группируем по категориям
+            const grouped = {};
             allTinctures.forEach((t) => {
-                const card = document.createElement('div');
-                card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
-                
-                // Описание показываем, только если оно есть
-                const descriptionHtml = t.description 
-                    ? `<div class="description">${t.description}</div>` 
-                    : '';
-                
-                card.innerHTML = `
-                    <div class="card-body">
-                        <div class="name">${t.name}</div>
-                        ${descriptionHtml}
-                    </div>
-                    <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
-                `;
+                if (!grouped[t.category]) grouped[t.category] = [];
+                grouped[t.category].push(t);
+            });
 
-                // Обработчик клика: выделяем только доступные
-                card.addEventListener('click', () => {
-                    if (!t.isAvailable) return;
-                    card.classList.toggle('selected');
-                    updateCounter();
+            // 3. Внутри каждой категории: сначала в наличии, потом закончившиеся
+            Object.keys(grouped).forEach((cat) => {
+                grouped[cat].sort((a, b) => {
+                    if (a.isAvailable === b.isAvailable) return 0;
+                    return a.isAvailable ? -1 : 1;
+                });
+            });
+
+            // 4. Собираем итоговый порядок категорий
+            const finalOrder = [...categoryOrder];
+            // Добавляем те категории, которые есть в базе, но нет в списке (например, "Прочее")
+            Object.keys(grouped).forEach((cat) => {
+                if (!finalOrder.includes(cat)) finalOrder.push(cat);
+            });
+
+            // 5. Рисуем категории
+            finalOrder.forEach((cat) => {
+                if (!grouped[cat]) return; // если такой категории нет в базе — пропускаем
+
+                const section = document.createElement('div');
+                section.className = 'category-section';
+
+                const header = document.createElement('h2');
+                header.className = 'category-header';
+                header.textContent = cat;
+                section.appendChild(header);
+
+                const grid = document.createElement('div');
+                grid.className = 'grid';
+
+                grouped[cat].forEach((t) => {
+                    const card = document.createElement('div');
+                    card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
+
+                    const descriptionHtml = t.description 
+                        ? `<div class="description">${t.description}</div>` 
+                        : '';
+
+                    card.innerHTML = `
+                        <div class="card-body">
+                            <div class="name">${t.name}</div>
+                            ${descriptionHtml}
+                        </div>
+                        <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+                    `;
+
+                    card.addEventListener('click', () => {
+                        if (!t.isAvailable) return;
+                        card.classList.toggle('selected');
+                        updateCounter();
+                    });
+
+                    grid.appendChild(card);
                 });
 
-                appDiv.appendChild(card);
+                section.appendChild(grid);
+                appDiv.appendChild(section);
             });
         });
     </script>
