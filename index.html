@@ -24,7 +24,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* === ЛОГОТИП === */
         .logo-wrap {
             text-align: center;
             margin-bottom: 12px;
@@ -35,7 +34,6 @@
             height: auto;
         }
 
-        /* === СЧЁТЧИК (липкий сверху) === */
         #counter {
             position: sticky;
             top: 0;
@@ -59,7 +57,6 @@
             margin-bottom: 0;
         }
 
-        /* === КАТЕГОРИИ === */
         .category-section {
             margin-bottom: 8px;
         }
@@ -86,7 +83,6 @@
             gap: 10px;
             transition: background 0.2s ease;
             border: 1px solid #f0f0f0;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .category-header:active {
@@ -115,7 +111,6 @@
             display: none;
         }
 
-        /* === СЕТКА КАРТОЧЕК === */
         .grid { 
             display: grid; 
             grid-template-columns: repeat(2, 1fr); 
@@ -123,7 +118,6 @@
             margin-bottom: 16px;
         }
 
-        /* === КАРТОЧКА === */
         .card { 
             background: #ffffff; 
             border-radius: 12px; 
@@ -136,10 +130,9 @@
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
-            min-height: 105px;
+            min-height: 130px;
             gap: 6px;
             cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
         }
 
         .card:active {
@@ -184,6 +177,19 @@
             word-break: break-word;
         }
 
+        /* === ЦЕНА === */
+        .price {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c2c2c;
+            letter-spacing: 0.3px;
+            margin-top: 2px;
+        }
+
+        .unavailable .price {
+            color: #999999;
+        }
+
         .status { 
             font-size: 10px; 
             color: #999999;
@@ -196,7 +202,6 @@
             color: #bbbbbb; 
         }
 
-        /* === ВЫДЕЛЕННАЯ КАРТОЧКА === */
         .card.selected {
             border: 2px solid #2c2c2c;
             background: #f5f5f5;
@@ -210,51 +215,20 @@
             color: #999999;
         }
 
-        /* === ПЛАНШЕТЫ (от 600px) === */
         @media (min-width: 600px) {
-            body {
-                padding: 24px 20px 60px 20px;
-            }
-
-            .logo-wrap img {
-                max-width: 220px;
-            }
-
-            .grid {
-                grid-template-columns: repeat(3, 1fr);
-                gap: 14px;
-            }
-
-            .card {
-                padding: 20px 14px;
-                min-height: 120px;
-                border-radius: 14px;
-            }
-
-            .name {
-                font-size: 16px;
-            }
-
-            .description {
-                font-size: 12px;
-            }
-
-            .category-header {
-                font-size: 15px;
-                letter-spacing: 3px;
-            }
+            body { padding: 24px 20px 60px 20px; }
+            .logo-wrap img { max-width: 220px; }
+            .grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+            .card { padding: 20px 14px; min-height: 140px; border-radius: 14px; }
+            .name { font-size: 16px; }
+            .description { font-size: 12px; }
+            .price { font-size: 15px; }
+            .category-header { font-size: 15px; letter-spacing: 3px; }
         }
 
-        /* === ДЕСКТОП (от 900px) === */
         @media (min-width: 900px) {
-            body {
-                padding: 40px 20px 80px 20px;
-            }
-
-            .logo-wrap img {
-                max-width: 250px;
-            }
-
+            body { padding: 40px 20px 80px 20px; }
+            .logo-wrap img { max-width: 250px; }
             .grid {
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
                 gap: 20px;
@@ -262,34 +236,21 @@
                 margin-left: auto;
                 margin-right: auto;
             }
-
-            .card {
-                padding: 24px 18px;
-                min-height: 130px;
-                border-radius: 16px;
-            }
-
+            .card { padding: 24px 18px; min-height: 150px; border-radius: 16px; }
             .card:hover {
                 box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
                 transform: translateY(-2px);
                 border-color: #e0e0e0;
             }
-
-            .name {
-                font-size: 17px;
-            }
-
-            .description {
-                font-size: 12px;
-            }
-
+            .name { font-size: 17px; }
+            .description { font-size: 12px; }
+            .price { font-size: 16px; }
             .category-header {
                 font-size: 18px;
                 max-width: 1100px;
                 margin-left: auto;
                 margin-right: auto;
             }
-
             .category-section {
                 max-width: 1100px;
                 margin-left: auto;
@@ -335,6 +296,12 @@
             }
         }
 
+        // Форматирует цену в вид "350 ₽"
+        function formatPrice(price) {
+            if (price === undefined || price === null || price === '') return '';
+            return `${price} ₽`;
+        }
+
         onSnapshot(collection(db, "tinctures"), (snapshot) => {
             appDiv.innerHTML = '';
             updateCounter();
@@ -351,6 +318,7 @@
                     name: data.name,
                     isAvailable: data.isAvailable,
                     description: data.description || '',
+                    price: data.price,
                     category: data.category || 'Прочее'
                 });
             });
@@ -407,10 +375,15 @@
                         ? `<div class="description">${t.description}</div>` 
                         : '';
 
+                    const priceHtml = t.price 
+                        ? `<div class="price">${formatPrice(t.price)}</div>` 
+                        : '';
+
                     card.innerHTML = `
                         <div class="card-body">
                             <div class="name">${t.name}</div>
                             ${descriptionHtml}
+                            ${priceHtml}
                         </div>
                         <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
                     `;
