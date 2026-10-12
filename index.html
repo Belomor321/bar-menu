@@ -91,6 +91,12 @@ h1 {
     margin-top: 50px; 
     color: #999999;
 }
+        .card.selected {
+    border: 2px solid #2c2c2c;
+    background: #f5f5f5;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+}
     </style>
 </head>
 <body>
@@ -148,12 +154,18 @@ onSnapshot(collection(db, "tinctures"), (snapshot) => {
     // 3. Выводим карточки в нужном порядке
     allTinctures.forEach((t) => {
         const card = document.createElement('div');
-        card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
-        card.innerHTML = `
-            <div class="name">${t.name}</div>
-            <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
-        `;
-        appDiv.appendChild(card);
+card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
+card.innerHTML = `
+    <div class="name">${t.name}</div>
+    <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+`;
+
+// 👇 НОВОЕ: обработчик клика для выделения
+card.addEventListener('click', () => {
+    card.classList.toggle('selected');
+});
+
+appDiv.appendChild(card);
     });
 });
     </script>
