@@ -104,20 +104,6 @@ h1 {
         const appDiv = document.getElementById('app');
 
         // Следим за изменениями в базе в реальном времени
-        snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    const card = document.createElement('div');
-    card.className = `card ${data.isAvailable ? 'available' : 'unavailable'}`;
-    card.innerHTML = `
-        <div class="name">${data.name}</div>
-        <div class="status">${data.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
-    `;
-    appDiv.appendChild(card);
-});
-Шаг 2. Замените весь блок onSnapshot(...) на этот
-Вам нужно полностью заменить кусок от onSnapshot(collection(db, "tinctures"), (snapshot) => { до закрывающей }); на такой код:
-
-javascript
 onSnapshot(collection(db, "tinctures"), (snapshot) => {
     appDiv.innerHTML = '';
     
