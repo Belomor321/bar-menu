@@ -70,6 +70,14 @@
             letter-spacing: 0.3px;
         }
 
+        .description {
+    font-size: 12px;
+    color: #888888;
+    line-height: 1.4;
+    font-style: italic;
+    margin-top: -4px;
+}
+
         .status { 
             font-size: 12px; 
             padding: 0; 
@@ -146,14 +154,15 @@
             }
 
             // 1. Собираем все настойки в массив
-            const allTinctures = [];
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                allTinctures.push({
-                    name: data.name,
-                    isAvailable: data.isAvailable
-                });
-            });
+const allTinctures = [];
+snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    allTinctures.push({
+        name: data.name,
+        isAvailable: data.isAvailable,
+        description: data.description || ''  // ← НОВОЕ
+    });
+});
 
             // 2. Сортируем: сначала в наличии, потом закончившиеся
             allTinctures.sort((a, b) => {
@@ -162,23 +171,30 @@
             });
 
             // 3. Выводим карточки в нужном порядке
-            allTinctures.forEach((t) => {
-                const card = document.createElement('div');
-                card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
-                card.innerHTML = `
-                    <div class="name">${t.name}</div>
-                    <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
-                `;
+    allTinctures.forEach((t) => {
+    const card = document.createElement('div');
+    card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
+    
+    // Описание показываем, только если оно есть
+    const descriptionHtml = t.description 
+        ? `<div class="description">${t.description}</div>` 
+        : '';
+    
+    card.innerHTML = `
+        <div class="name">${t.name}</div>
+        ${descriptionHtml}
+        <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+    `;
 
-                // ОДИН обработчик клика: выделяем только доступные
-                card.addEventListener('click', () => {
-                    if (!t.isAvailable) return;
-                    card.classList.toggle('selected');
-                    updateCounter();
-                });
+    // ОДИН обработчик клика: выделяем только доступные
+    card.addEventListener('click', () => {
+        if (!t.isAvailable) return;
+        card.classList.toggle('selected');
+        updateCounter();
+    });
 
-                appDiv.appendChild(card);
-            });
+    appDiv.appendChild(card);
+});
         });
     </script>
 </body>
