@@ -25,7 +25,7 @@
 
         .grid { 
             display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
             gap: 20px; 
             max-width: 1100px; 
             margin: 0 auto; 
@@ -41,10 +41,11 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
-            min-height: 110px;
-            gap: 10px;
+            min-height: 130px;
+            gap: 8px;
+            cursor: pointer;
         }
 
         .card:hover {
@@ -61,6 +62,17 @@
             opacity: 0.4; 
             border-color: #eeeeee;
             background: #fafafa;
+            cursor: default;
+        }
+
+        /* Центральный блок с названием и описанием — растягивается */
+        .card-body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            gap: 6px;
         }
 
         .name { 
@@ -68,18 +80,18 @@
             font-weight: 500; 
             color: #2c2c2c;
             letter-spacing: 0.3px;
+            line-height: 1.3;
         }
 
         .description {
-    font-size: 12px;
-    color: #888888;
-    line-height: 1.4;
-    font-style: italic;
-    margin-top: -4px;
-}
+            font-size: 12px;
+            color: #888888;
+            line-height: 1.4;
+            font-style: italic;
+        }
 
         .status { 
-            font-size: 12px; 
+            font-size: 11px; 
             padding: 0; 
             color: #999999;
             text-transform: uppercase;
@@ -137,7 +149,7 @@
 
         const appDiv = document.getElementById('app');
 
-        // Функция обновления счётчика (объявлена ОДИН РАЗ, вне цикла)
+        // Функция обновления счётчика
         function updateCounter() {
             const count = document.querySelectorAll('.card.selected').length;
             document.getElementById('counter').textContent = count > 0 ? `Выбрано: ${count}` : '';
@@ -146,7 +158,7 @@
         // Следим за изменениями в базе в реальном времени
         onSnapshot(collection(db, "tinctures"), (snapshot) => {
             appDiv.innerHTML = '';
-            updateCounter(); // сбрасываем счётчик при перерисовке
+            updateCounter();
 
             if (snapshot.empty) {
                 appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
@@ -154,15 +166,15 @@
             }
 
             // 1. Собираем все настойки в массив
-const allTinctures = [];
-snapshot.forEach((docSnap) => {
-    const data = docSnap.data();
-    allTinctures.push({
-        name: data.name,
-        isAvailable: data.isAvailable,
-        description: data.description || ''  // ← НОВОЕ
-    });
-});
+            const allTinctures = [];
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                allTinctures.push({
+                    name: data.name,
+                    isAvailable: data.isAvailable,
+                    description: data.description || ''
+                });
+            });
 
             // 2. Сортируем: сначала в наличии, потом закончившиеся
             allTinctures.sort((a, b) => {
@@ -170,31 +182,33 @@ snapshot.forEach((docSnap) => {
                 return a.isAvailable ? -1 : 1;
             });
 
-            // 3. Выводим карточки в нужном порядке
-    allTinctures.forEach((t) => {
-    const card = document.createElement('div');
-    card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
-    
-    // Описание показываем, только если оно есть
-    const descriptionHtml = t.description 
-        ? `<div class="description">${t.description}</div>` 
-        : '';
-    
-    card.innerHTML = `
-        <div class="name">${t.name}</div>
-        ${descriptionHtml}
-        <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
-    `;
+            // 3. Выводим карточки
+            allTinctures.forEach((t) => {
+                const card = document.createElement('div');
+                card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
+                
+                // Описание показываем, только если оно есть
+                const descriptionHtml = t.description 
+                    ? `<div class="description">${t.description}</div>` 
+                    : '';
+                
+                card.innerHTML = `
+                    <div class="card-body">
+                        <div class="name">${t.name}</div>
+                        ${descriptionHtml}
+                    </div>
+                    <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+                `;
 
-    // ОДИН обработчик клика: выделяем только доступные
-    card.addEventListener('click', () => {
-        if (!t.isAvailable) return;
-        card.classList.toggle('selected');
-        updateCounter();
-    });
+                // Обработчик клика: выделяем только доступные
+                card.addEventListener('click', () => {
+                    if (!t.isAvailable) return;
+                    card.classList.toggle('selected');
+                    updateCounter();
+                });
 
-    appDiv.appendChild(card);
-});
+                appDiv.appendChild(card);
+            });
         });
     </script>
 </body>
