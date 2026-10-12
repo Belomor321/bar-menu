@@ -103,6 +103,7 @@ h1 {
    <div style="text-align: center; margin-bottom: 20px;">
     <img src="IMG_1224.png" alt="Логотип" style="max-width: 250px; height: auto;">
 </div>
+    <div id="counter" style="text-align: center; color: #999999; font-size: 14px; margin-bottom: 20px;"></div>
     <div id="app" class="grid"><div class="loading">Загрузка меню...</div></div>
 
     <script type="module">
@@ -163,6 +164,15 @@ card.innerHTML = `
 // 👇 НОВОЕ: обработчик клика для выделения
 card.addEventListener('click', () => {
     card.classList.toggle('selected');
+});
+        function updateCounter() {
+    const count = document.querySelectorAll('.card.selected').length;
+    document.getElementById('counter').textContent = count > 0 ? `Выбрано: ${count}` : '';
+}
+
+card.addEventListener('click', () => {
+    card.classList.toggle('selected');
+    updateCounter();
 });
 
 appDiv.appendChild(card);
