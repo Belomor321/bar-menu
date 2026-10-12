@@ -121,22 +121,53 @@
         }
 
         /* === СТИЛИ КАТЕГОРИЙ === */
-        .category-section {
-            max-width: 1100px;
-            margin: 0 auto 40px auto;
-        }
+        /* === КАТЕГОРИИ === */
+.category-section {
+    max-width: 1100px;
+    margin: 0 auto 30px auto;
+}
 
-        .category-header {
-            font-size: 20px;
-            font-weight: 400;
-            color: #2c2c2c;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            text-align: center;
-            margin: 40px 0 20px 0;
-            padding-bottom: 12px;
-            border-bottom: 1px solid #eeeeee;
-        }
+.category-header {
+    font-size: 18px;
+    font-weight: 400;
+    color: #2c2c2c;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 30px 0 20px 0;
+    padding: 16px 24px;
+    background: #fafafa;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    transition: background 0.2s ease;
+    border: 1px solid #f0f0f0;
+}
+
+.category-header:hover {
+    background: #f0f0f0;
+}
+
+.category-header .arrow {
+    font-size: 12px;
+    color: #999999;
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
+
+/* Стрелка поворачивается, когда категория свёрнута */
+.category-section.collapsed .category-header .arrow {
+    transform: rotate(-90deg);
+}
+
+/* Скрываем сетку, когда категория свёрнута */
+.category-section.collapsed .grid {
+    display: none;
+}
 
         .category-header:first-child {
             margin-top: 0;
@@ -221,49 +252,62 @@
             });
 
             // 5. Рисуем категории
-            finalOrder.forEach((cat) => {
-                if (!grouped[cat]) return; // если такой категории нет в базе — пропускаем
+finalOrder.forEach((cat) => {
+    if (!grouped[cat]) return;
 
-                const section = document.createElement('div');
-                section.className = 'category-section';
+    const section = document.createElement('div');
+    section.className = 'category-section';
 
-                const header = document.createElement('h2');
-                header.className = 'category-header';
-                header.textContent = cat;
-                section.appendChild(header);
+    // Считаем, сколько доступно в категории (для показа в заголовке)
+    const availableCount = grouped[cat].filter(t => t.isAvailable).length;
+    const totalCount = grouped[cat].length;
 
-                const grid = document.createElement('div');
-                grid.className = 'grid';
+    const header = document.createElement('h2');
+    header.className = 'category-header';
+    header.innerHTML = `
+        <span>${cat}</span>
+        <span style="font-size: 12px; color: #bbbbbb; letter-spacing: 1px;">${availableCount}/${totalCount}</span>
+        <span class="arrow">▼</span>
+    `;
 
-                grouped[cat].forEach((t) => {
-                    const card = document.createElement('div');
-                    card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
+    // Клик по заголовку — сворачиваем/разворачиваем
+    header.addEventListener('click', () => {
+        section.classList.toggle('collapsed');
+    });
 
-                    const descriptionHtml = t.description 
-                        ? `<div class="description">${t.description}</div>` 
-                        : '';
+    section.appendChild(header);
 
-                    card.innerHTML = `
-                        <div class="card-body">
-                            <div class="name">${t.name}</div>
-                            ${descriptionHtml}
-                        </div>
-                        <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
-                    `;
+    const grid = document.createElement('div');
+    grid.className = 'grid';
 
-                    card.addEventListener('click', () => {
-                        if (!t.isAvailable) return;
-                        card.classList.toggle('selected');
-                        updateCounter();
-                    });
+    grouped[cat].forEach((t) => {
+        const card = document.createElement('div');
+        card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
 
-                    grid.appendChild(card);
-                });
+        const descriptionHtml = t.description 
+            ? `<div class="description">${t.description}</div>` 
+            : '';
 
-                section.appendChild(grid);
-                appDiv.appendChild(section);
-            });
+        card.innerHTML = `
+            <div class="card-body">
+                <div class="name">${t.name}</div>
+                ${descriptionHtml}
+            </div>
+            <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+        `;
+
+        card.addEventListener('click', (e) => {
+            if (!t.isAvailable) return;
+            card.classList.toggle('selected');
+            updateCounter();
         });
+
+        grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+    appDiv.appendChild(section);
+});
     </script>
 </body>
 </html>
