@@ -104,23 +104,55 @@ h1 {
         const appDiv = document.getElementById('app');
 
         // Следим за изменениями в базе в реальном времени
-        onSnapshot(collection(db, "tinctures"), (snapshot) => {
-            appDiv.innerHTML = '';
-            if (snapshot.empty) {
-                appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
-                return;
-            }
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const card = document.createElement('div');
-                card.className = `card ${data.isAvailable ? 'available' : 'unavailable'}`;
-                card.innerHTML = `
-                    <div class="name">${data.name}</div>
-                    <div class="status">${data.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
-                `;
-                appDiv.appendChild(card);
-            });
+        snapshot.forEach((docSnap) => {
+    const data = docSnap.data();
+    const card = document.createElement('div');
+    card.className = `card ${data.isAvailable ? 'available' : 'unavailable'}`;
+    card.innerHTML = `
+        <div class="name">${data.name}</div>
+        <div class="status">${data.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+    `;
+    appDiv.appendChild(card);
+});
+Шаг 2. Замените весь блок onSnapshot(...) на этот
+Вам нужно полностью заменить кусок от onSnapshot(collection(db, "tinctures"), (snapshot) => { до закрывающей }); на такой код:
+
+javascript
+onSnapshot(collection(db, "tinctures"), (snapshot) => {
+    appDiv.innerHTML = '';
+    
+    if (snapshot.empty) {
+        appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
+        return;
+    }
+
+    // 1. Собираем все настойки в массив
+    const allTinctures = [];
+    snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        allTinctures.push({
+            name: data.name,
+            isAvailable: data.isAvailable
         });
+    });
+
+    // 2. Сортируем: сначала в наличии, потом закончившиеся
+    allTinctures.sort((a, b) => {
+        if (a.isAvailable === b.isAvailable) return 0;
+        return a.isAvailable ? -1 : 1;
+    });
+
+    // 3. Выводим карточки в нужном порядке
+    allTinctures.forEach((t) => {
+        const card = document.createElement('div');
+        card.className = `card ${t.isAvailable ? 'available' : 'unavailable'}`;
+        card.innerHTML = `
+            <div class="name">${t.name}</div>
+            <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+        `;
+        appDiv.appendChild(card);
+    });
+});
     </script>
 </body>
 </html>
