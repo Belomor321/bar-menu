@@ -172,27 +172,54 @@
             color: #bbbbbb; 
         }
 
-        /* === СЧЁТЧИК ПОРЦИЙ НА КАРТОЧКЕ === */
-        .quantity-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 32px;
-            height: 32px;
-            background: #2c2c2c;
-            color: #ffffff;
-            border-radius: 50%;
+        /* === КНОПКИ −/+ НА КАРТОЧКЕ === */
+        .card-controls {
             display: none;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
-            font-weight: 600;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-            z-index: 10;
+            gap: 12px;
+            margin-top: 4px;
+            width: 100%;
         }
 
-        .card.selected .quantity-badge {
+        .card.selected .card-controls {
             display: flex;
+        }
+
+        .qty-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid #dddddd;
+            background: #ffffff;
+            font-size: 18px;
+            color: #2c2c2c;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+            font-weight: 500;
+            transition: background 0.1s ease;
+        }
+
+        .qty-btn:active {
+            background: #f0f0f0;
+            transform: scale(0.92);
+        }
+
+        .qty-value {
+            font-size: 15px;
+            font-weight: 600;
+            min-width: 20px;
+            text-align: center;
+            color: #2c2c2c;
+        }
+
+        /* Скрываем .status, когда карточка выбрана — вместо него кнопки */
+        .card.selected .status {
+            display: none;
         }
 
         .card.selected {
@@ -426,6 +453,30 @@
             padding: 40px 0;
         }
 
+        /* === ПОДСКАЗКА === */
+        .hint {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2c2c2c;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            z-index: 250;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .hint.visible {
+            opacity: 1;
+        }
+
         @media (min-width: 600px) {
             body { padding: 24px 20px 120px 20px; }
             .logo-wrap img { max-width: 220px; }
@@ -476,7 +527,6 @@
     </div>
     <div id="app"><div class="loading">Загрузка меню...</div></div>
 
-    <!-- Плавающая панель корзины -->
     <div class="cart-bar" id="cartBar">
         <div class="cart-bar-info">
             В корзине<span class="count" id="cartCount">0</span>
@@ -484,7 +534,6 @@
         <div class="cart-bar-button">Открыть</div>
     </div>
 
-    <!-- Модальное окно корзины -->
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal" id="modal">
             <div class="modal-header">
@@ -499,6 +548,8 @@
             </div>
         </div>
     </div>
+
+    <div class="hint" id="hint"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -520,10 +571,7 @@
         const appDiv = document.getElementById('app');
         const categoryOrder = ["Фруктовые", "Ягодные", "Сливочные", "Овощные", "Эксперименты"];
 
-        // Корзина: { "название настойки": { name, price, qty } }
         const cart = {};
-
-        // Для быстрого доступа к карточкам по имени (для обновления счётчиков)
         const cardElements = {};
 
         function formatPrice(price) {
@@ -531,14 +579,13 @@
             return `${price} ₽`;
         }
 
-        // === РАБОТА С КОРЗИНОЙ ===
-
         function addToCart(name, price) {
             if (!cart[name]) {
                 cart[name] = { name, price, qty: 0 };
             }
             cart[name].qty += 1;
             updateCartUI();
+            maybeShowHint();
         }
 
         function removeFromCart(name) {
@@ -556,21 +603,22 @@
         }
 
         function updateCartUI() {
-            // Обновляем счётчики на карточках
+            // Обновляем карточки
             Object.keys(cardElements).forEach(name => {
                 const card = cardElements[name];
-                const badge = card.querySelector('.quantity-badge');
                 const qty = cart[name] ? cart[name].qty : 0;
+                const qtyValue = card.querySelector('.qty-value');
+                
                 if (qty > 0) {
                     card.classList.add('selected');
-                    badge.textContent = qty;
+                    if (qtyValue) qtyValue.textContent = qty;
                 } else {
                     card.classList.remove('selected');
-                    badge.textContent = '';
+                    if (qtyValue) qtyValue.textContent = '0';
                 }
             });
 
-            // Обновляем плавающую панель
+            // Плавающая панель
             const totalQty = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
             const cartBar = document.getElementById('cartBar');
             const cartCount = document.getElementById('cartCount');
@@ -581,7 +629,6 @@
                 cartBar.classList.remove('visible');
             }
 
-            // Обновляем содержимое модального окна
             renderCartItems();
         }
 
@@ -621,7 +668,6 @@
             container.innerHTML = html;
             totalEl.innerHTML = total > 0 ? `<span>Итого:</span><span>${total} ₽</span>` : '';
 
-            // Навешиваем обработчики на кнопки + и −
             container.querySelectorAll('.cart-item-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
@@ -635,8 +681,22 @@
             });
         }
 
-        // === МОДАЛЬНОЕ ОКНО ===
+        // === ПОДСКАЗКА ===
+        function maybeShowHint() {
+            // Показываем подсказку только один раз на этом устройстве
+            if (localStorage.getItem('hint_shown') === 'true') return;
+            
+            const hint = document.getElementById('hint');
+            hint.textContent = 'Нажмите + или − под названием, чтобы изменить количество';
+            hint.classList.add('visible');
+            
+            setTimeout(() => {
+                hint.classList.remove('visible');
+                localStorage.setItem('hint_shown', 'true');
+            }, 4000);
+        }
 
+        // === МОДАЛЬНОЕ ОКНО ===
         document.getElementById('cartBar').addEventListener('click', () => {
             document.getElementById('modalOverlay').classList.add('visible');
         });
@@ -662,8 +722,7 @@
             }
         });
 
-        // === ЗАГРУЗКА ДАННЫХ ИЗ FIREBASE ===
-
+        // === ЗАГРУЗКА ИЗ FIREBASE ===
         onSnapshot(collection(db, "tinctures"), (snapshot) => {
             appDiv.innerHTML = '';
             Object.keys(cardElements).forEach(k => delete cardElements[k]);
@@ -711,10 +770,7 @@
 
                 const header = document.createElement('h2');
                 header.className = 'category-header';
-                header.innerHTML = `
-                    <span>${cat}</span>
-                    <span class="arrow">▼</span>
-                `;
+                header.innerHTML = `<span>${cat}</span><span class="arrow">▼</span>`;
 
                 header.addEventListener('click', () => {
                     section.classList.toggle('collapsed');
@@ -738,57 +794,40 @@
                         : '';
 
                     card.innerHTML = `
-                        <div class="quantity-badge"></div>
                         <div class="card-body">
                             <div class="name">${t.name}</div>
                             ${descriptionHtml}
                             ${priceHtml}
                         </div>
                         <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
+                        <div class="card-controls">
+                            <button class="qty-btn" data-action="minus">−</button>
+                            <span class="qty-value">0</span>
+                            <button class="qty-btn" data-action="plus">+</button>
+                        </div>
                     `;
 
-                    // Запоминаем карточку по имени — чтобы обновлять счётчик
                     cardElements[t.name] = card;
 
-                    // Клик — добавить порцию
-                    card.addEventListener('click', () => {
+                    // Клик по карточке (но не по кнопкам) — добавить порцию
+                    card.addEventListener('click', (e) => {
                         if (!t.isAvailable) return;
+                        if (e.target.closest('.qty-btn')) return; // если клик по кнопке — игнорируем
                         addToCart(t.name, t.price);
                     });
 
-                    // Правый клик (на компьютере) — убрать одну порцию
-                    card.addEventListener('contextmenu', (e) => {
-                        e.preventDefault();
-                        if (!t.isAvailable) return;
-                        removeFromCart(t.name);
-                    });
-
-                    // Долгое нажатие (на телефоне) — убрать одну порцию
-                    let touchTimer = null;
-                    card.addEventListener('touchstart', (e) => {
-                        if (!t.isAvailable) return;
-                        touchTimer = setTimeout(() => {
-                            removeFromCart(t.name);
-                            touchTimer = null;
-                            // Отменяем последующий click
-                            card.dataset.longPress = 'true';
-                        }, 600);
-                    });
-                    card.addEventListener('touchend', (e) => {
-                        if (touchTimer) {
-                            clearTimeout(touchTimer);
-                            touchTimer = null;
-                        }
-                        if (card.dataset.longPress === 'true') {
-                            e.preventDefault();
-                            delete card.dataset.longPress;
-                        }
-                    });
-                    card.addEventListener('touchmove', () => {
-                        if (touchTimer) {
-                            clearTimeout(touchTimer);
-                            touchTimer = null;
-                        }
+                    // Обработчики кнопок + и −
+                    card.querySelectorAll('.qty-btn').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            if (!t.isAvailable) return;
+                            
+                            if (btn.dataset.action === 'plus') {
+                                addToCart(t.name, t.price);
+                            } else {
+                                removeFromCart(t.name);
+                            }
+                        });
                     });
 
                     grid.appendChild(card);
@@ -798,7 +837,6 @@
                 appDiv.appendChild(section);
             });
 
-            // После отрисовки синхронизируем состояние корзины
             updateCartUI();
         });
     </script>
