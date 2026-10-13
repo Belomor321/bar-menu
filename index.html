@@ -20,7 +20,7 @@
             background-color: #ffffff; 
             color: #2c2c2c; 
             line-height: 1.5;
-            padding: 16px 12px 40px 12px;
+            padding: 16px 12px 100px 12px;
             -webkit-font-smoothing: antialiased;
         }
 
@@ -34,36 +34,13 @@
             height: auto;
         }
 
-        #counter {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            text-align: center;
-            color: #2c2c2c;
-            font-size: 13px;
-            font-weight: 500;
-            padding: 10px;
-            margin: 0 -12px 12px -12px;
-            background: #ffffff;
-            border-bottom: 1px solid #f0f0f0;
-            min-height: 38px;
-            transition: all 0.2s ease;
-        }
-
-        #counter:empty {
-            min-height: 0;
-            padding: 0;
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
         .category-section {
             margin-bottom: 8px;
         }
 
         .category-header {
             position: sticky;
-            top: 38px;
+            top: 0;
             z-index: 50;
             font-size: 13px;
             font-weight: 600;
@@ -126,6 +103,7 @@
             min-height: 130px;
             gap: 6px;
             cursor: pointer;
+            position: relative;
         }
 
         .card:active {
@@ -194,6 +172,29 @@
             color: #bbbbbb; 
         }
 
+        /* === СЧЁТЧИК ПОРЦИЙ НА КАРТОЧКЕ === */
+        .quantity-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 32px;
+            height: 32px;
+            background: #2c2c2c;
+            color: #ffffff;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+            z-index: 10;
+        }
+
+        .card.selected .quantity-badge {
+            display: flex;
+        }
+
         .card.selected {
             border: 2px solid #2c2c2c;
             background: #f5f5f5;
@@ -207,8 +208,226 @@
             color: #999999;
         }
 
+        /* === ПЛАВАЮЩАЯ ПАНЕЛЬ КОРЗИНЫ === */
+        .cart-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #2c2c2c;
+            color: #ffffff;
+            padding: 16px 20px;
+            display: none;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 200;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .cart-bar.visible {
+            display: flex;
+        }
+
+        .cart-bar:active {
+            transform: scale(0.99);
+        }
+
+        .cart-bar-info {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .cart-bar-info .count {
+            background: #ffffff;
+            color: #2c2c2c;
+            border-radius: 50%;
+            padding: 2px 9px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        .cart-bar-button {
+            background: #ffffff;
+            color: #2c2c2c;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* === МОДАЛЬНОЕ ОКНО КОРЗИНЫ === */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 300;
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal-overlay.visible {
+            display: flex;
+        }
+
+        .modal {
+            background: #ffffff;
+            width: 100%;
+            max-width: 600px;
+            max-height: 85vh;
+            border-radius: 20px 20px 0 0;
+            padding: 20px;
+            overflow-y: auto;
+            animation: slideUp 0.25s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999999;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-name {
+            font-size: 15px;
+            font-weight: 500;
+            color: #2c2c2c;
+        }
+
+        .cart-item-price {
+            font-size: 13px;
+            color: #888888;
+            margin-top: 2px;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-item-qty {
+            font-size: 15px;
+            font-weight: 600;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .cart-item-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid #dddddd;
+            background: #ffffff;
+            font-size: 16px;
+            color: #2c2c2c;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .cart-item-btn:active {
+            background: #f0f0f0;
+        }
+
+        .modal-total {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #eeeeee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .modal-actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+        }
+
+        .modal-btn-clear {
+            background: #f5f5f5;
+            color: #c0392b;
+        }
+
+        .modal-btn-clear:active {
+            background: #ebebeb;
+        }
+
+        .modal-btn-close {
+            background: #2c2c2c;
+            color: #ffffff;
+        }
+
+        .modal-btn-close:active {
+            background: #444444;
+        }
+
+        .cart-empty {
+            text-align: center;
+            color: #999999;
+            font-size: 14px;
+            padding: 40px 0;
+        }
+
         @media (min-width: 600px) {
-            body { padding: 24px 20px 60px 20px; }
+            body { padding: 24px 20px 120px 20px; }
             .logo-wrap img { max-width: 220px; }
             .grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
             .card { padding: 20px 14px; min-height: 140px; border-radius: 14px; }
@@ -219,7 +438,7 @@
         }
 
         @media (min-width: 900px) {
-            body { padding: 40px 20px 80px 20px; }
+            body { padding: 40px 20px 120px 20px; }
             .logo-wrap img { max-width: 250px; }
             .grid {
                 grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -255,8 +474,31 @@
     <div class="logo-wrap">
         <img src="IMG_1224.png" alt="Логотип">
     </div>
-    <div id="counter"></div>
     <div id="app"><div class="loading">Загрузка меню...</div></div>
+
+    <!-- Плавающая панель корзины -->
+    <div class="cart-bar" id="cartBar">
+        <div class="cart-bar-info">
+            В корзине<span class="count" id="cartCount">0</span>
+        </div>
+        <div class="cart-bar-button">Открыть</div>
+    </div>
+
+    <!-- Модальное окно корзины -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="modal">
+            <div class="modal-header">
+                <div class="modal-title">🛒 Корзина</div>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+            <div id="cartItems"></div>
+            <div class="modal-total" id="modalTotal"></div>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-clear" id="clearBtn">Очистить всё</button>
+                <button class="modal-btn modal-btn-close" id="closeBtn">Готово</button>
+            </div>
+        </div>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -278,24 +520,153 @@
         const appDiv = document.getElementById('app');
         const categoryOrder = ["Фруктовые", "Ягодные", "Сливочные", "Овощные", "Эксперименты"];
 
-        function updateCounter() {
-            const count = document.querySelectorAll('.card.selected').length;
-            const counterEl = document.getElementById('counter');
-            if (count > 0) {
-                counterEl.textContent = `Выбрано: ${count}`;
-            } else {
-                counterEl.textContent = '';
-            }
-        }
+        // Корзина: { "название настойки": { name, price, qty } }
+        const cart = {};
+
+        // Для быстрого доступа к карточкам по имени (для обновления счётчиков)
+        const cardElements = {};
 
         function formatPrice(price) {
             if (price === undefined || price === null || price === '') return '';
             return `${price} ₽`;
         }
 
+        // === РАБОТА С КОРЗИНОЙ ===
+
+        function addToCart(name, price) {
+            if (!cart[name]) {
+                cart[name] = { name, price, qty: 0 };
+            }
+            cart[name].qty += 1;
+            updateCartUI();
+        }
+
+        function removeFromCart(name) {
+            if (!cart[name]) return;
+            cart[name].qty -= 1;
+            if (cart[name].qty <= 0) {
+                delete cart[name];
+            }
+            updateCartUI();
+        }
+
+        function clearCart() {
+            Object.keys(cart).forEach(key => delete cart[key]);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            // Обновляем счётчики на карточках
+            Object.keys(cardElements).forEach(name => {
+                const card = cardElements[name];
+                const badge = card.querySelector('.quantity-badge');
+                const qty = cart[name] ? cart[name].qty : 0;
+                if (qty > 0) {
+                    card.classList.add('selected');
+                    badge.textContent = qty;
+                } else {
+                    card.classList.remove('selected');
+                    badge.textContent = '';
+                }
+            });
+
+            // Обновляем плавающую панель
+            const totalQty = Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
+            const cartBar = document.getElementById('cartBar');
+            const cartCount = document.getElementById('cartCount');
+            if (totalQty > 0) {
+                cartBar.classList.add('visible');
+                cartCount.textContent = totalQty;
+            } else {
+                cartBar.classList.remove('visible');
+            }
+
+            // Обновляем содержимое модального окна
+            renderCartItems();
+        }
+
+        function renderCartItems() {
+            const container = document.getElementById('cartItems');
+            const totalEl = document.getElementById('modalTotal');
+            const items = Object.values(cart);
+
+            if (items.length === 0) {
+                container.innerHTML = '<div class="cart-empty">Корзина пуста</div>';
+                totalEl.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+
+            items.forEach(item => {
+                const itemTotal = (item.price || 0) * item.qty;
+                total += itemTotal;
+
+                html += `
+                    <div class="cart-item">
+                        <div>
+                            <div class="cart-item-name">${item.name}</div>
+                            ${item.price ? `<div class="cart-item-price">${formatPrice(item.price)} × ${item.qty} = ${itemTotal} ₽</div>` : `<div class="cart-item-price">${item.qty} шт.</div>`}
+                        </div>
+                        <div class="cart-item-controls">
+                            <button class="cart-item-btn" data-action="minus" data-name="${item.name}">−</button>
+                            <span class="cart-item-qty">${item.qty}</span>
+                            <button class="cart-item-btn" data-action="plus" data-name="${item.name}">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            totalEl.innerHTML = total > 0 ? `<span>Итого:</span><span>${total} ₽</span>` : '';
+
+            // Навешиваем обработчики на кнопки + и −
+            container.querySelectorAll('.cart-item-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const name = btn.dataset.name;
+                    if (btn.dataset.action === 'plus') {
+                        addToCart(name, cart[name]?.price);
+                    } else {
+                        removeFromCart(name);
+                    }
+                });
+            });
+        }
+
+        // === МОДАЛЬНОЕ ОКНО ===
+
+        document.getElementById('cartBar').addEventListener('click', () => {
+            document.getElementById('modalOverlay').classList.add('visible');
+        });
+
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('modalOverlay').classList.remove('visible');
+        });
+
+        document.getElementById('closeBtn').addEventListener('click', () => {
+            document.getElementById('modalOverlay').classList.remove('visible');
+        });
+
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'modalOverlay') {
+                e.currentTarget.classList.remove('visible');
+            }
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            if (Object.keys(cart).length === 0) return;
+            if (confirm('Очистить всю корзину?')) {
+                clearCart();
+            }
+        });
+
+        // === ЗАГРУЗКА ДАННЫХ ИЗ FIREBASE ===
+
         onSnapshot(collection(db, "tinctures"), (snapshot) => {
             appDiv.innerHTML = '';
-            updateCounter();
+            Object.keys(cardElements).forEach(k => delete cardElements[k]);
 
             if (snapshot.empty) {
                 appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
@@ -367,6 +738,7 @@
                         : '';
 
                     card.innerHTML = `
+                        <div class="quantity-badge"></div>
                         <div class="card-body">
                             <div class="name">${t.name}</div>
                             ${descriptionHtml}
@@ -375,10 +747,48 @@
                         <div class="status">${t.isAvailable ? '✅ В наличии' : '❌ Закончилась'}</div>
                     `;
 
+                    // Запоминаем карточку по имени — чтобы обновлять счётчик
+                    cardElements[t.name] = card;
+
+                    // Клик — добавить порцию
                     card.addEventListener('click', () => {
                         if (!t.isAvailable) return;
-                        card.classList.toggle('selected');
-                        updateCounter();
+                        addToCart(t.name, t.price);
+                    });
+
+                    // Правый клик (на компьютере) — убрать одну порцию
+                    card.addEventListener('contextmenu', (e) => {
+                        e.preventDefault();
+                        if (!t.isAvailable) return;
+                        removeFromCart(t.name);
+                    });
+
+                    // Долгое нажатие (на телефоне) — убрать одну порцию
+                    let touchTimer = null;
+                    card.addEventListener('touchstart', (e) => {
+                        if (!t.isAvailable) return;
+                        touchTimer = setTimeout(() => {
+                            removeFromCart(t.name);
+                            touchTimer = null;
+                            // Отменяем последующий click
+                            card.dataset.longPress = 'true';
+                        }, 600);
+                    });
+                    card.addEventListener('touchend', (e) => {
+                        if (touchTimer) {
+                            clearTimeout(touchTimer);
+                            touchTimer = null;
+                        }
+                        if (card.dataset.longPress === 'true') {
+                            e.preventDefault();
+                            delete card.dataset.longPress;
+                        }
+                    });
+                    card.addEventListener('touchmove', () => {
+                        if (touchTimer) {
+                            clearTimeout(touchTimer);
+                            touchTimer = null;
+                        }
                     });
 
                     grid.appendChild(card);
@@ -387,6 +797,9 @@
                 section.appendChild(grid);
                 appDiv.appendChild(section);
             });
+
+            // После отрисовки синхронизируем состояние корзины
+            updateCartUI();
         });
     </script>
 </body>
