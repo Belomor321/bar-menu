@@ -1,412 +1,524 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Админ-панель</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Админ-панель</title>
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        html, body {
-            margin: 0;
-            padding: 0;
-        }
+html, body {
+    margin: 0;
+    padding: 0;
+}
 
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: #f5f5f5;
-            color: #2c2c2c;
-            line-height: 1.5;
-            padding: 16px 12px 40px 12px;
-            -webkit-font-smoothing: antialiased;
-        }
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #2c2c2c;
+    line-height: 1.5;
+    padding: 16px 12px 40px 12px;
+    -webkit-font-smoothing: antialiased;
+}
 
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+}
 
-        h1 { 
-            text-align: center; 
-            font-weight: 400;
-            font-size: 22px;
-            letter-spacing: 2px;
-            margin: 0 0 24px 0;
-            color: #2c2c2c;
-        }
+h1 {
+    text-align: center;
+    font-weight: 400;
+    font-size: 22px;
+    letter-spacing: 2px;
+    margin: 0 0 24px 0;
+    color: #2c2c2c;
+}
 
-        /* === ЭКРАН ВХОДА === */
-        .login-box {
-            background: #ffffff;
-            padding: 24px 20px;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
+/* === ВХОД === */
+.login-box {
+    background: #ffffff;
+    padding: 24px 20px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
 
-        .login-box input {
-            width: 100%;
-            padding: 14px 16px;
-            font-size: 16px;
-            border: 1px solid #dddddd;
-            border-radius: 10px;
-            margin-bottom: 12px;
-            font-family: inherit;
-        }
+.login-box input {
+    width: 100%;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    font-family: inherit;
+}
 
-        .login-box input:focus {
-            outline: none;
-            border-color: #2c2c2c;
-        }
+.login-box input:focus {
+    outline: none;
+    border-color: #2c2c2c;
+}
 
-        .login-box button {
-            width: 100%;
-            padding: 14px;
-            font-size: 15px;
-            font-weight: 600;
-            background: #2c2c2c;
-            color: #ffffff;
-            border: none;
-            border-radius: 10px;
-            cursor: pointer;
-            letter-spacing: 1px;
-        }
+.login-box button {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    background: #2c2c2c;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    letter-spacing: 1px;
+}
 
-        .login-box button:active {
-            background: #444444;
-        }
+.login-box button:active {
+    background: #444444;
+}
 
-        .hidden { display: none !important; }
+.hidden { display: none !important; }
 
-        /* === КАТЕГОРИИ === */
-        .category-section {
-            margin-bottom: 12px;
-        }
+/* === ПОИСК === */
+.search-box {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    background: #f5f5f5;
+    padding: 8px 0 12px 0;
+    margin-bottom: 12px;
+}
 
-        .category-header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            font-size: 13px;
-            font-weight: 600;
-            color: #2c2c2c;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-align: center;
-            margin: 0 0 12px 0;
-            padding: 14px 16px;
-            background: #ffffff;
-            border-radius: 10px;
-            cursor: pointer;
-            user-select: none;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-            transition: background 0.2s ease;
-            border: 1px solid #eeeeee;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-        }
+.search-box input {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 15px;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+    background: #ffffff;
+    font-family: inherit;
+    outline: none;
+}
 
-        .category-header:active {
-            background: #f5f5f5;
-        }
+.search-box input:focus {
+    border-color: #2c2c2c;
+}
 
-        .category-header .arrow {
-            font-size: 10px;
-            color: #999999;
-            transition: transform 0.3s ease;
-            display: inline-block;
-        }
+/* === КАТЕГОРИИ === */
+.category-section {
+    margin-bottom: 12px;
+}
 
-        .category-header .count {
-            font-size: 11px;
-            color: #bbbbbb;
-            letter-spacing: 1px;
-            font-weight: 400;
-        }
+.category-section.hidden {
+    display: none;
+}
 
-        .category-section.collapsed .category-header .arrow {
-            transform: rotate(-90deg);
-        }
+.category-header {
+    position: sticky;
+    top: 64px;
+    z-index: 50;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2c2c2c;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 0 0 12px 0;
+    padding: 14px 16px;
+    background: #ffffff;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s ease;
+    border: 1px solid #eeeeee;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
 
-        .category-section.collapsed .item-list {
-            display: none;
-        }
+.category-header:active {
+    background: #f5f5f5;
+}
 
-        /* === СПИСОК НАСТОЕК === */
-        .item-list {
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 4px 0;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            border: 1px solid #eeeeee;
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
+.category-header .arrow {
+    font-size: 10px;
+    color: #999999;
+    transition: transform 0.3s ease;
+    display: inline-block;
+}
 
-        .item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 16px;
-            border-bottom: 1px solid #f5f5f5;
-            gap: 12px;
-        }
+.category-header .count {
+    font-size: 11px;
+    color: #bbbbbb;
+    letter-spacing: 1px;
+    font-weight: 400;
+}
 
-        .item:last-child {
-            border-bottom: none;
-        }
+.category-section.collapsed .category-header .arrow {
+    transform: rotate(-90deg);
+}
 
-        .item-info {
-            flex-grow: 1;
-            min-width: 0;
-        }
+.category-section.collapsed .item-list {
+    display: none;
+}
 
-        .item-name {
-            font-size: 15px;
-            font-weight: 500;
-            color: #2c2c2c;
-            word-break: break-word;
-        }
+/* === СПИСОК === */
+.item-list {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 4px 0;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    border: 1px solid #eeeeee;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
 
-        .item-price {
-            font-size: 12px;
-            color: #999999;
-            margin-top: 2px;
-        }
+.item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 16px;
+    border-bottom: 1px solid #f5f5f5;
+    gap: 12px;
+}
 
-        /* === ПЕРЕКЛЮЧАТЕЛЬ === */
-        .toggle {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 28px;
-            flex-shrink: 0;
-        }
+.item:last-child {
+    border-bottom: none;
+}
 
-        .toggle input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
+.item-info {
+    flex-grow: 1;
+    min-width: 0;
+}
 
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            inset: 0;
-            background: #dddddd;
-            border-radius: 28px;
-            transition: 0.3s;
-        }
+.item-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #2c2c2c;
+    word-break: break-word;
+}
 
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 3px;
-            bottom: 3px;
-            background: #ffffff;
-            border-radius: 50%;
-            transition: 0.3s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
+.item-price {
+    font-size: 12px;
+    color: #999999;
+    margin-top: 2px;
+}
 
-        .toggle input:checked + .toggle-slider {
-            background: #2ecc71;
-        }
+/* === ТУМБЛЕР === */
+.toggle {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+}
 
-        .toggle input:checked + .toggle-slider:before {
-            transform: translateX(22px);
-        }
+.toggle input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
 
-        /* === ПОДСКАЗКА === */
-        .hint-text {
-            text-align: center;
-            color: #999999;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
+.toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #dddddd;
+    border-radius: 28px;
+    transition: 0.3s;
+}
 
-        /* === ЗАГРУЗКА === */
-        .loading {
-            text-align: center;
-            color: #999999;
-            font-size: 15px;
-            padding: 40px 0;
-        }
+.toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background: #ffffff;
+    border-radius: 50%;
+    transition: 0.3s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
 
-        /* === ПЛАНШЕТЫ И ДЕСКТОП === */
-        @media (min-width: 600px) {
-            body { padding: 32px 20px 60px 20px; }
-            h1 { font-size: 26px; }
-            .item { padding: 16px 20px; }
-            .item-name { font-size: 16px; }
-        }
-    </style>
+.toggle input:checked + .toggle-slider {
+    background: #2ecc71;
+}
+
+.toggle input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+}
+
+/* === ПОДСКАЗКА === */
+.hint-text {
+    text-align: center;
+    color: #999999;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+/* === ЗАГРУЗКА === */
+.loading {
+    text-align: center;
+    color: #999999;
+    font-size: 15px;
+    padding: 40px 0;
+}
+
+/* === ДЕСКТОП === */
+@media (min-width: 600px) {
+    body { padding: 32px 20px 60px 20px; }
+    h1 { font-size: 26px; }
+    .item { padding: 16px 20px; }
+    .item-name { font-size: 16px; }
+    .category-header { top: 80px; }
+    .search-box { padding: 8px 0 16px 0; }
+}
+</style>
 </head>
 <body>
     <div class="container">
-        <!-- ЭКРАН ВХОДА -->
+        <!-- ВХОД -->
         <div id="login" class="login-box">
             <h1>🔐 Админ-панель</h1>
             <input type="password" id="pass" placeholder="Введите пароль" autocomplete="off">
             <button onclick="checkPass()">Войти</button>
         </div>
 
-        <!-- ПАНЕЛЬ УПРАВЛЕНИЯ -->
+        <!-- ПАНЕЛЬ -->
         <div id="adminPanel" class="hidden">
             <h1>Управление наличием</h1>
-            <div class="hint-text">Переключайте тумблер, если настойка есть в наличии</div>
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Найти настойку...">
+            </div>
             <div id="list"><div class="loading">Загрузка...</div></div>
         </div>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDv0R4ruzfogyFkZ0RhfgA8-gJJ4FzcpCY",
-            authDomain: "ikraivodkispb.firebaseapp.com",
-            projectId: "ikraivodkispb",
-            storageBucket: "ikraivodkispb.firebasestorage.app",
-            messagingSenderId: "686031842638",
-            appId: "1:686031842638:web:454507ccaed8602833021f",
-            measurementId: "G-9LH7WLJ4DX"
-        };
+const firebaseConfig = {
+    apiKey: "AIzaSyDv0R4ruzfogyFkZ0RhfgA8-gJJ4FzcpCY",
+    authDomain: "ikraivodkispb.firebaseapp.com",
+    projectId: "ikraivodkispb",
+    storageBucket: "ikraivodkispb.firebasestorage.app",
+    messagingSenderId: "686031842638",
+    appId: "1:686031842638:web:454507ccaed8602833021f",
+    measurementId: "G-9LH7WLJ4DX"
+};
 
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-        // ПРИДУМАЙТЕ СВОЙ ПАРОЛЬ ЗДЕСЬ
-        const ADMIN_PASSWORD = "ikra123";
+// Пароль
+const ADMIN_PASSWORD = "admin123";
 
-        const categoryOrder = ["Фруктовые", "Ягодные", "Сливочные", "Овощные", "Эксперименты"];
+const categoryOrder = ["Фруктовые", "Ягодные", "Сливочные", "Овощные", "Эксперименты"];
 
-        window.checkPass = function() {
-            const input = document.getElementById('pass').value;
-            if (input === ADMIN_PASSWORD) {
-                document.getElementById('login').classList.add('hidden');
-                document.getElementById('adminPanel').classList.remove('hidden');
-                loadAdminList();
-            } else {
-                alert("Неверный пароль!");
-            }
-        };
+// Хранилище состояния
+const tinctureData = {};
+const collapsedCategories = new Set();
+let lastScrollY = 0;
+let isFirstRender = true;
 
-        function loadAdminList() {
-            const listDiv = document.getElementById('list');
+// Ссылки на DOM
+const listDiv = document.getElementById('list');
+const searchInput = document.getElementById('searchInput');
 
-            onSnapshot(collection(db, "tinctures"), (snapshot) => {
-                listDiv.innerHTML = '';
+window.checkPass = function() {
+    const input = document.getElementById('pass').value;
+    if (input === ADMIN_PASSWORD) {
+        document.getElementById('login').classList.add('hidden');
+        document.getElementById('adminPanel').classList.remove('hidden');
+        loadAdminList();
+    } else {
+        alert("Неверный пароль!");
+    }
+};
 
-                if (snapshot.empty) {
-                    listDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
-                    return;
-                }
+// === ФИЛЬТР ===
+function applyFilters() {
+    const query = searchInput.value.toLowerCase().trim();
+    
+    document.querySelectorAll('.category-section').forEach(function(section) {
+        const items = section.querySelectorAll('.item');
+        let anyVisible = false;
+        
+        items.forEach(function(item) {
+            const name = (item.dataset.name || '').toLowerCase();
+            const show = !query || name.indexOf(query) !== -1;
+            item.style.display = show ? '' : 'none';
+            if (show) anyVisible = true;
+        });
+        
+        section.classList.toggle('hidden', !anyVisible);
+    });
+}
 
-                // Собираем данные
-                const allTinctures = [];
-                snapshot.forEach((docSnap) => {
-                    const data = docSnap.data();
-                    allTinctures.push({
-                        id: docSnap.id,
-                        name: data.name,
-                        isAvailable: data.isAvailable,
-                        price: data.price,
-                        category: data.category || 'Прочее'
-                    });
-                });
+searchInput.addEventListener('input', applyFilters);
 
-                // Группируем по категориям
-                const grouped = {};
-                allTinctures.forEach((t) => {
-                    if (!grouped[t.category]) grouped[t.category] = [];
-                    grouped[t.category].push(t);
-                });
+// === СОХРАНЕНИЕ СКРОЛЛА ===
+window.addEventListener('scroll', function() {
+    lastScrollY = window.scrollY;
+}, { passive: true });
 
-                // Сортируем внутри категорий по алфавиту
-                Object.keys(grouped).forEach((cat) => {
-                    grouped[cat].sort((a, b) => a.name.localeCompare(b.name, 'ru'));
-                });
+// === ОБНОВЛЕНИЕ ТУМБЛЕРА ===
+async function toggleAvailability(id, checkbox) {
+    const newState = checkbox.checked;
+    // Мгновенно визуально сохраняем позицию
+    const scrollY = window.scrollY;
+    
+    try {
+        await updateDoc(doc(db, "tinctures", id), { isAvailable: newState });
+        // Позиция восстановится в onSnapshot
+    } catch (err) {
+        console.error('Ошибка:', err);
+        alert('Не удалось сохранить. Проверьте интернет.');
+        checkbox.checked = !newState;
+        window.scrollTo(0, scrollY);
+    }
+}
 
-                // Определяем порядок категорий
-                const finalOrder = [...categoryOrder];
-                Object.keys(grouped).forEach((cat) => {
-                    if (!finalOrder.includes(cat)) finalOrder.push(cat);
-                });
+// === ЗАГРУЗКА ===
+function loadAdminList() {
+    onSnapshot(collection(db, "tinctures"), function(snapshot) {
+        // Сохраняем скролл и фокус
+        const scrollY = window.scrollY;
+        const activeElement = document.activeElement;
+        const searchValue = searchInput.value;
+        const wasSearchFocused = activeElement === searchInput;
 
-                // Рисуем
-                finalOrder.forEach((cat) => {
-                    if (!grouped[cat]) return;
+        // Очищаем
+        listDiv.innerHTML = '';
+        Object.keys(tinctureData).forEach(function(k) { delete tinctureData[k]; });
 
-                    const section = document.createElement('div');
-                    section.className = 'category-section';
+        if (snapshot.empty) {
+            listDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
+            return;
+        }
 
-                    const availableCount = grouped[cat].filter(t => t.isAvailable).length;
-                    const totalCount = grouped[cat].length;
+        // Собираем данные
+        const allTinctures = [];
+        snapshot.forEach(function(docSnap) {
+            const data = docSnap.data();
+            const t = {
+                id: docSnap.id,
+                name: data.name,
+                isAvailable: data.isAvailable,
+                price: data.price,
+                category: data.category || 'Прочее'
+            };
+            allTinctures.push(t);
+            tinctureData[t.id] = t;
+        });
 
-                    const header = document.createElement('h2');
-                    header.className = 'category-header';
-                    header.innerHTML = `
-                        <span>${cat}</span>
-                        <span class="count">${availableCount}/${totalCount}</span>
-                        <span class="arrow">▼</span>
-                    `;
+        // Группируем
+        const grouped = {};
+        allTinctures.forEach(function(t) {
+            if (!grouped[t.category]) grouped[t.category] = [];
+            grouped[t.category].push(t);
+        });
 
-                    header.addEventListener('click', () => {
-                        section.classList.toggle('collapsed');
-                    });
-
-                    section.appendChild(header);
-
-                    const itemList = document.createElement('div');
-                    itemList.className = 'item-list';
-
-                    grouped[cat].forEach((t) => {
-                        const item = document.createElement('div');
-                        item.className = 'item';
-
-                        const priceText = t.price ? `${t.price} ₽` : '';
-
-                        item.innerHTML = `
-                            <div class="item-info">
-                                <div class="item-name">${t.name}</div>
-                                ${priceText ? `<div class="item-price">${priceText}</div>` : ''}
-                            </div>
-                            <label class="toggle">
-                                <input type="checkbox" ${t.isAvailable ? 'checked' : ''} 
-                                       data-id="${t.id}">
-                                <span class="toggle-slider"></span>
-                            </label>
-                        `;
-
-                        itemList.appendChild(item);
-                    });
-
-                    section.appendChild(itemList);
-                    listDiv.appendChild(section);
-                });
-
-                // Навешиваем обработчики на тумблеры ПОСЛЕ отрисовки
-                listDiv.querySelectorAll('.toggle input').forEach((checkbox) => {
-                    checkbox.addEventListener('change', async (e) => {
-                        const id = e.target.dataset.id;
-                        const isChecked = e.target.checked;
-                        try {
-                            await updateDoc(doc(db, "tinctures", id), { isAvailable: isChecked });
-                        } catch (err) {
-                            console.error('Ошибка обновления:', err);
-                            alert('Не удалось сохранить. Проверьте интернет.');
-                            e.target.checked = !isChecked;
-                        }
-                    });
-                });
+        Object.keys(grouped).forEach(function(cat) {
+            grouped[cat].sort(function(a, b) {
+                return a.name.localeCompare(b.name, 'ru');
             });
+        });
+
+        const finalOrder = categoryOrder.slice();
+        Object.keys(grouped).forEach(function(cat) {
+            if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
+        });
+
+        // Рисуем
+        finalOrder.forEach(function(cat) {
+            if (!grouped[cat]) return;
+
+            const section = document.createElement('div');
+            section.className = 'category-section';
+            section.dataset.cat = cat;
+            
+            if (collapsedCategories.has(cat)) {
+                section.classList.add('collapsed');
+            }
+
+            const availableCount = grouped[cat].filter(function(t) { return t.isAvailable; }).length;
+            const totalCount = grouped[cat].length;
+
+            const header = document.createElement('h2');
+            header.className = 'category-header';
+            header.innerHTML = '<span>' + cat + '</span>' +
+                '<span class="count">' + availableCount + '/' + totalCount + '</span>' +
+                '<span class="arrow">▼</span>';
+
+            header.addEventListener('click', function() {
+                section.classList.toggle('collapsed');
+                if (section.classList.contains('collapsed')) {
+                    collapsedCategories.add(cat);
+                } else {
+                    collapsedCategories.delete(cat);
+                }
+            });
+
+            section.appendChild(header);
+
+            const itemList = document.createElement('div');
+            itemList.className = 'item-list';
+
+            grouped[cat].forEach(function(t) {
+                const item = document.createElement('div');
+                item.className = 'item';
+                item.dataset.name = t.name;
+
+                const priceText = t.price ? t.price + ' ₽' : '';
+
+                item.innerHTML = '<div class="item-info">' +
+                    '<div class="item-name">' + t.name + '</div>' +
+                    (priceText ? '<div class="item-price">' + priceText + '</div>' : '') +
+                    '</div>' +
+                    '<label class="toggle">' +
+                    '<input type="checkbox" ' + (t.isAvailable ? 'checked' : '') + ' data-id="' + t.id + '">' +
+                    '<span class="toggle-slider"></span>' +
+                    '</label>';
+
+                itemList.appendChild(item);
+            });
+
+            section.appendChild(itemList);
+            listDiv.appendChild(section);
+        });
+
+        // Восстанавливаем поиск
+        searchInput.value = searchValue;
+        if (searchValue) applyFilters();
+
+        // Обработчики тумблеров
+        listDiv.querySelectorAll('.toggle input').forEach(function(checkbox) {
+            checkbox.addEventListener('change', function(e) {
+                toggleAvailability(e.target.dataset.id, e.target);
+            });
+        });
+
+        // Восстанавливаем скролл и фокус
+        requestAnimationFrame(function() {
+            window.scrollTo(0, scrollY);
+            if (wasSearchFocused) {
+                searchInput.focus();
+                // Курсор в конец
+                searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+            }
+        });
+    });
+}
+</script>
+</body>
+</html>
         }
     </script>
 </body>
