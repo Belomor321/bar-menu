@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Админ-панель</title>
 <style>
+/* Стили остаются практически такими же, как в прошлой версии, 
+   но я добавил поле для email */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; padding: 0; }
 body {
@@ -103,10 +105,6 @@ h1 {
 }
 .toggle input:checked + .toggle-slider { background: #2ecc71; }
 .toggle input:checked + .toggle-slider:before { transform: translateX(22px); }
-.hint-text {
-    text-align: center; color: #999999;
-    font-size: 13px; margin-bottom: 12px;
-}
 .loading {
     text-align: center; color: #999999;
     font-size: 15px; padding: 40px 0;
@@ -123,11 +121,14 @@ h1 {
 </head>
 <body>
 <div class="container">
+    <!-- Экран входа -->
     <div id="login" class="login-box">
         <h1>🔐 Админ-панель</h1>
-        <input type="password" id="pass" placeholder="Введите пароль" autocomplete="off">
-        <button onclick="checkPass()">Войти</button>
+        <input type="email" id="email" placeholder="Email администратора" autocomplete="username">
+        <input type="password" id="password" placeholder="Пароль" autocomplete="current-password">
+        <button onclick="login()">Войти</button>
     </div>
+    <!-- Панель управления -->
     <div id="adminPanel" class="hidden">
         <h1>Управление наличием</h1>
         <div class="search-box">
@@ -136,9 +137,12 @@ h1 {
         <div id="list"><div class="loading">Загрузка...</div></div>
     </div>
 </div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+// Импортируем Auth
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyDv0R4ruzfogyFkZ0RhfgA8-gJJ4FzcpCY",
@@ -152,23 +156,42 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app); // Инициализируем Auth
 
-const ADMIN_PASSWORD = "ikra123";
 const categoryOrder = ["Фруктовые", "Ягодные", "Сливочные", "Овощные", "Эксперименты"];
 const collapsedCategories = new Set();
 const listDiv = document.getElementById('list');
 const searchInput = document.getElementById('searchInput');
 
-window.checkPass = function() {
-    const input = document.getElementById('pass').value;
-    if (input === ADMIN_PASSWORD) {
+// === ЛОГИКА ВХОДА ===
+window.login = async function() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+        // onAuthStateChanged ниже сам покажет панель
+    } catch (error) {
+        alert("Ошибка входа: " + error.message);
+    }
+};
+
+// Следим за состоянием входа
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        // Пользователь вошел
         document.getElementById('login').classList.add('hidden');
         document.getElementById('adminPanel').classList.remove('hidden');
         loadAdminList();
     } else {
-        alert("Неверный пароль!");
+        // Пользователь вышел
+        document.getElementById('login').classList.remove('hidden');
+        document.getElementById('adminPanel').classList.add('hidden');
+        listDiv.innerHTML = ''; // Очищаем список
     }
-};
+});
+
+// === ОСТАЛЬНАЯ ЛОГИКА (без изменений) ===
 
 function applyFilters() {
     const query = searchInput.value.toLowerCase().trim();
@@ -194,14 +217,17 @@ async function toggleAvailability(id, checkbox) {
         await updateDoc(doc(db, "tinctures", id), { isAvailable: newState });
     } catch (err) {
         console.error('Ошибка:', err);
-        alert('Не удалось сохранить. Проверьте интернет.');
+        alert('Не удалось сохранить. Проверьте интернет и права доступа.');
         checkbox.checked = !newState;
         window.scrollTo(0, scrollY);
     }
 }
 
 function loadAdminList() {
-    onSnapshot(collection(db, "tinctures"), function(snapshot) {
+    // Отписываемся от предыдущего слушателя, если он был
+    if (window.unsubscribeList) window.unsubscribeList();
+    
+    window.unsubscribeList = onSnapshot(collection(db, "tinctures"), function(snapshot) {
         const scrollY = window.scrollY;
         const searchValue = searchInput.value;
         const wasSearchFocused = document.activeElement === searchInput;
