@@ -217,7 +217,7 @@ body {
 .barmen-btn:active { background: #444444; }
 .toast { position: fixed; bottom: 180px; left: 50%; transform: translateX(-50%) translateY(20px); background: #2c2c2c; color: #ffffff; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; white-space: nowrap; }
 .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-.flying-shot { position: fixed; z-index: 500; font-size: 26px; pointer-events: none; will-change: transform, opacity; transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.7s ease-in; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
+.flying-shot { position: fixed; z-index: 500; font-size: 30px; pointer-events: none; will-change: transform, opacity; transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.7s ease-in; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
 @media (min-width: 700px) {
     .logo-wrap { padding: 24px 20px 12px 20px; }
     .logo-wrap .logo { height: 120px; }
@@ -374,8 +374,8 @@ function flyShotToCart(fromEl) {
     const el = document.createElement('div');
     el.className = 'flying-shot';
     el.textContent = '🍷';
-    el.style.left = (startX - 13) + 'px';
-    el.style.top = (startY - 13) + 'px';
+    el.style.left = (startX - 15) + 'px';
+    el.style.top = (startY - 15) + 'px';
     document.body.appendChild(el);
     void el.offsetWidth;
 
