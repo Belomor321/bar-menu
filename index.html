@@ -1033,41 +1033,64 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         appDiv.appendChild(section);
     });
 
-    // Автоскролл через requestAnimationFrame (плавно)
+    // Автоскролл: только вперёд, в конце — пауза и быстрый возврат в начало
     function startAutoScroll(cat) {
         if (autoScrollIntervals[cat]) return;
         const hScroll = document.querySelector('.horizontal-scroll[data-cat="' + cat + '"]');
         if (!hScroll) return;
         
-        let direction = 1;
         let paused = false;
+        let pauseUntil = 0;
+        let returning = false;
         
         // Пауза при касании
         hScroll.addEventListener('touchstart', function() { paused = true; }, { passive: true });
         hScroll.addEventListener('touchend', function() { 
-            setTimeout(function() { paused = false; }, 2000); 
+            setTimeout(function() { paused = false; pauseUntil = 0; }, 2000); 
         }, { passive: true });
         hScroll.addEventListener('mouseenter', function() { paused = true; });
-        hScroll.addEventListener('mouseleave', function() { paused = false; });
+        hScroll.addEventListener('mouseleave', function() { paused = false; pauseUntil = 0; });
         
-        function animate() {
+        function animate(timestamp) {
             if (!document.body.contains(hScroll)) {
                 delete autoScrollIntervals[cat];
                 return;
             }
             
-            if (!paused) {
-                if (direction === 1) {
-                    hScroll.scrollLeft += 0.8;
-                    if (hScroll.scrollLeft + hScroll.clientWidth >= hScroll.scrollWidth - 1) {
-                        direction = -1;
-                    }
-                } else {
-                    hScroll.scrollLeft -= 0.8;
-                    if (hScroll.scrollLeft <= 0) {
-                        direction = 1;
-                    }
+            // Если сейчас пауза — просто ждём
+            if (paused) {
+                autoScrollIntervals[cat] = requestAnimationFrame(animate);
+                return;
+            }
+            
+            // Если сейчас фаза «пауза после доезда до конца»
+            if (pauseUntil > 0) {
+                if (timestamp < pauseUntil) {
+                    autoScrollIntervals[cat] = requestAnimationFrame(animate);
+                    return;
                 }
+                // Пауза закончилась — быстро возвращаемся в начало
+                pauseUntil = 0;
+                returning = true;
+            }
+            
+            // Быстрый возврат в начало
+            if (returning) {
+                hScroll.scrollLeft -= 40;
+                if (hScroll.scrollLeft <= 0) {
+                    hScroll.scrollLeft = 0;
+                    returning = false;
+                }
+                autoScrollIntervals[cat] = requestAnimationFrame(animate);
+                return;
+            }
+            
+            // Обычная медленная прокрутка вперёд
+            hScroll.scrollLeft += 0.8;
+            
+            // Доехали до конца — ставим паузу на 1.5 секунды
+            if (hScroll.scrollLeft + hScroll.clientWidth >= hScroll.scrollWidth - 1) {
+                pauseUntil = timestamp + 1500; // 1500 мс = 1.5 секунды паузы
             }
             
             autoScrollIntervals[cat] = requestAnimationFrame(animate);
@@ -1075,7 +1098,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         
         autoScrollIntervals[cat] = requestAnimationFrame(animate);
     }
-
     function stopAutoScroll(cat) {
         if (autoScrollIntervals[cat]) {
             cancelAnimationFrame(autoScrollIntervals[cat]);
