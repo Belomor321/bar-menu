@@ -14,11 +14,9 @@ body {
     -webkit-font-smoothing: antialiased; padding-bottom: 150px;
 }
 
-/* Логотип */
 .logo-wrap { text-align: center; padding: 16px 12px 8px 12px; }
 .logo-wrap .logo { height: 90px; width: auto; display: inline-block; }
 
-/* Скромная кнопка "Поделиться" */
 .share-btn {
     display: inline-flex; align-items: center; gap: 6px;
     margin-top: 4px; padding: 6px 14px; border-radius: 16px;
@@ -26,12 +24,8 @@ body {
     font-size: 12px; font-weight: 400; font-family: inherit;
     cursor: pointer; transition: all 0.2s ease;
 }
-.share-btn:active {
-    transform: scale(0.95); background: #f5f5f5;
-    color: #2c2c2c; border-color: #bbbbbb;
-}
+.share-btn:active { transform: scale(0.95); background: #f5f5f5; color: #2c2c2c; border-color: #bbbbbb; }
 
-/* Подсказка */
 .hint {
     text-align: center; font-size: 13px; color: #777777;
     padding: 10px 20px 14px 20px; line-height: 1.55;
@@ -40,7 +34,6 @@ body {
 .hint strong { color: #1a1a1a; font-weight: 700; }
 .hint em { font-style: normal; color: #2c2c2c; font-weight: 500; }
 
-/* Поиск */
 .search-row {
     position: sticky; top: 0; z-index: 100;
     background: rgba(255, 255, 255, 0.96);
@@ -56,7 +49,6 @@ body {
 }
 .search-row .search-input:focus { border-color: #2c2c2c; background: #ffffff; }
 
-/* Категории */
 .category-section { padding: 0 12px; }
 .category-section.hidden { display: none; }
 
@@ -72,21 +64,14 @@ body {
     font-size: 10px; color: #bbbbbb; transition: transform 0.3s ease;
 }
 .category-section.collapsed .category-header .arrow { transform: rotate(-90deg); }
-.category-section.collapsed .cards { display: none; }
 
-/* Превью 3 случайных настоек */
-.preview-list {
-    display: flex; flex-wrap: wrap; gap: 6px;
-    padding: 10px 4px 14px 4px;
-    border-bottom: 1px solid #f5f5f5;
+/* Превью: 3 карточки, видны только в свёрнутой категории */
+.preview-cards {
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 12px 0 20px 0;
 }
-.preview-item {
-    font-size: 11px; color: #777777; background: #f8f8f8;
-    padding: 4px 10px; border-radius: 12px;
-    white-space: nowrap; overflow: hidden;
-    text-overflow: ellipsis; max-width: 100%;
-}
-.category-section:not(.collapsed) .preview-list { display: none; }
+.category-section:not(.collapsed) .preview-cards { display: none; }
+.category-section.collapsed .cards { display: none; }
 
 /* Карточки */
 .cards {
@@ -135,7 +120,6 @@ body {
 }
 .card.unavailable .status .dot { background: #cccccc; }
 
-/* Кнопки */
 .card-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .qty-btn {
     width: 30px; height: 30px; border-radius: 50%;
@@ -166,7 +150,6 @@ body {
     padding: 40px 20px; color: #999999;
 }
 
-/* Анимация бокала */
 .fly-glass {
     position: fixed;
     font-size: 30px;
@@ -177,7 +160,6 @@ body {
     will-change: transform, opacity;
 }
 
-/* Кнопка "Наверх" */
 .scroll-top {
     position: fixed; right: 16px; bottom: 130px;
     width: 44px; height: 44px; border-radius: 50%;
@@ -190,7 +172,6 @@ body {
 .scroll-top.visible { display: flex; opacity: 1; }
 .scroll-top:active { transform: scale(0.9); }
 
-/* Чипсы снизу */
 .bottom-chips {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: rgba(255, 255, 255, 0.98);
@@ -215,7 +196,6 @@ body {
 .chip:active { transform: scale(0.95); background: #f0f0f0; }
 .chip.active { background: #2c2c2c; color: #ffffff; border-color: #2c2c2c; }
 
-/* Корзина */
 .cart-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: #2c2c2c; color: #ffffff;
@@ -247,7 +227,6 @@ body {
     text-transform: uppercase; letter-spacing: 1px;
 }
 
-/* Модалка */
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
     z-index: 300; display: none; align-items: flex-end; justify-content: center;
@@ -328,7 +307,6 @@ body {
     font-size: 14px; padding: 40px 0;
 }
 
-/* Модалка QR-кода */
 .barmen-modal {
     background: #ffffff; width: 100%; max-width: 600px;
     border-radius: 20px 20px 0 0;
@@ -348,6 +326,8 @@ body {
 }
 #qrcode img, #qrcode canvas {
     border-radius: 8px;
+    max-width: 100%;
+    height: auto;
 }
 #barmenText {
     font-size: 12px; color: #999999;
@@ -364,7 +344,6 @@ body {
 }
 .barmen-btn:active { background: #444444; }
 
-/* Уведомление */
 .toast {
     position: fixed; bottom: 160px; left: 50%;
     transform: translateX(-50%) translateY(20px);
@@ -377,15 +356,12 @@ body {
 }
 .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* Десктоп */
 @media (min-width: 700px) {
     .logo-wrap { padding: 24px 20px 12px 20px; }
     .logo-wrap .logo { height: 120px; }
     .search-row { padding: 10px 20px; }
-    .category-section {
-        padding: 0 20px; max-width: 1100px; margin: 0 auto;
-    }
-    .cards {
+    .category-section { padding: 0 20px; max-width: 1100px; margin: 0 auto; }
+    .cards, .preview-cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 12px;
@@ -394,9 +370,7 @@ body {
     .card .name { font-size: 16px; }
     .card .price { font-size: 16px; }
     .card .description { font-size: 13px; }
-    .category-header {
-        font-size: 13px; letter-spacing: 4px; padding: 20px 4px;
-    }
+    .category-header { font-size: 13px; letter-spacing: 4px; padding: 20px 4px; }
     .scroll-top { right: 24px; bottom: 140px; }
     .modal-btn-row { flex-wrap: nowrap; }
     .bottom-chips { padding: 12px 20px; }
@@ -462,9 +436,7 @@ body {
             <button class="barmen-btn" id="barmenCloseBtn">Закрыть</button>
         </div>
     </div>
-
-    <div class="toast" id="toast"></div>
-    <script type="module">
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -491,7 +463,6 @@ const cardElements = {};
 const tinctureData = {};
 const collapsedCategories = new Set();
 
-// Восстановление корзины
 try {
     const saved = localStorage.getItem('bar_cart');
     if (saved) {
@@ -513,22 +484,19 @@ function formatPrice(price) {
     return price + ' ₽';
 }
 
-// Toast
 let toastTimeout;
 function showToast(text) {
     const toast = document.getElementById('toast');
     toast.textContent = text;
     toast.classList.add('visible');
     clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(function() {
-        toast.classList.remove('visible');
-    }, 2000);
+    toastTimeout = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
 }
 
-// Анимация бокала
+// Анимация бокала (исправлено: работает и при первом нажатии)
 function flyGlass(fromElement) {
     const cartBar = document.getElementById('cartBar');
-    if (!cartBar || !cartBar.classList.contains('visible')) return;
+    if (!cartBar) return;
     
     const fromRect = fromElement.getBoundingClientRect();
     const toRect = cartBar.querySelector('.cart-bar-icon').getBoundingClientRect();
@@ -552,7 +520,6 @@ function flyGlass(fromElement) {
     setTimeout(function() { glass.remove(); }, 750);
 }
 
-// Корзина
 function addToCart(name, sourceElement) {
     const t = tinctureData[name];
     if (!t || !t.isAvailable) return;
@@ -689,7 +656,6 @@ function applyFilters() {
 
 searchInput.addEventListener('input', applyFilters);
 
-// Кнопка "Наверх"
 const scrollTopBtn = document.getElementById('scrollTop');
 window.addEventListener('scroll', function() {
     if (window.scrollY > 300) scrollTopBtn.classList.add('visible');
@@ -699,7 +665,6 @@ scrollTopBtn.addEventListener('click', function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Поделиться
 document.getElementById('shareBtn').addEventListener('click', async function() {
     const shareData = {
         title: 'Меню настоек',
@@ -716,201 +681,5 @@ document.getElementById('shareBtn').addEventListener('click', async function() {
         if (err.name !== 'AbortError') {
             try {
                 await navigator.clipboard.writeText(window.location.href);
-                showToast('Ссылка скопирована!');
-            } catch (e) { showToast('Не удалось скопировать'); }
-        }
-    }
-});
-
-// Модалки
-document.getElementById('cartBar').addEventListener('click', function() {
-    document.getElementById('modalOverlay').classList.add('visible');
-});
-document.getElementById('modalClose').addEventListener('click', function() {
-    document.getElementById('modalOverlay').classList.remove('visible');
-});
-document.getElementById('closeBtn').addEventListener('click', function() {
-    document.getElementById('modalOverlay').classList.remove('visible');
-});
-document.getElementById('modalOverlay').addEventListener('click', function(e) {
-    if (e.target.id === 'modalOverlay') e.currentTarget.classList.remove('visible');
-});
-document.getElementById('clearBtn').addEventListener('click', function() {
-    if (Object.keys(cart).length === 0) return;
-    if (confirm('Очистить всю корзину?')) clearCart();
-});
-
-// QR-код
-document.getElementById('showBarmenBtn').addEventListener('click', function() {
-    const items = Object.values(cart);
-    if (items.length === 0) return;
-
-    let orderText = 'ЗАКАЗ:\n\n';
-    let total = 0;
-    items.forEach(function(item) {
-        const itemTotal = (item.price || 0) * item.qty;
-        total += itemTotal;
-        orderText += item.name + ' × ' + item.qty + '\n';
-    });
-    if (total > 0) orderText += '\nИТОГО: ' + total + ' ₽';
-
-    const qrContainer = document.getElementById('qrcode');
-    qrContainer.innerHTML = '';
-
-    new QRCode(qrContainer, {
-        text: orderText,
-        width: 260,
-        height: 260,
-        colorDark: '#2c2c2c',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-    });
-
-    document.getElementById('barmenText').textContent = orderText;
-
-    document.getElementById('modalOverlay').classList.remove('visible');
-    document.getElementById('barmenOverlay').classList.add('visible');
-});
-
-document.getElementById('barmenCloseBtn').addEventListener('click', function() {
-    document.getElementById('barmenOverlay').classList.remove('visible');
-});
-document.getElementById('barmenOverlay').addEventListener('click', function(e) {
-    if (e.target.id === 'barmenOverlay') e.currentTarget.classList.remove('visible');
-});
-
-// Firebase
-onSnapshot(collection(db, "tinctures"), function(snapshot) {
-    appDiv.innerHTML = '';
-    Object.keys(cardElements).forEach(function(k) { delete cardElements[k]; });
-    Object.keys(tinctureData).forEach(function(k) { delete tinctureData[k]; });
-    bottomChips.innerHTML = '';
-
-    if (snapshot.empty) {
-        appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
-        return;
-    }
-
-    const allTinctures = [];
-    snapshot.forEach(function(docSnap) {
-        const data = docSnap.data();
-        const t = {
-            name: data.name,
-            isAvailable: data.isAvailable,
-            description: data.description || '',
-            price: data.price,
-            category: data.category || 'Прочее'
-        };
-        allTinctures.push(t);
-        tinctureData[t.name] = t;
-    });
-
-    const grouped = {};
-    allTinctures.forEach(function(t) {
-        if (!grouped[t.category]) grouped[t.category] = [];
-        grouped[t.category].push(t);
-    });
-
-    Object.keys(grouped).forEach(function(cat) {
-        grouped[cat].sort(function(a, b) {
-            if (a.isAvailable === b.isAvailable) return a.name.localeCompare(b.name, 'ru');
-            return a.isAvailable ? -1 : 1;
-        });
-    });
-
-    const finalOrder = categoryOrder.slice();
-    Object.keys(grouped).forEach(function(cat) {
-        if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
-    });
-
-    // Чипсы снизу
-    finalOrder.forEach(function(cat) {
-        if (!grouped[cat]) return;
-        const chip = document.createElement('button');
-        chip.className = 'chip';
-        chip.dataset.cat = cat;
-        chip.textContent = cat;
-        chip.addEventListener('click', function() {
-            const target = document.querySelector('.category-section[data-cat="' + cat + '"]');
-            if (!target) return;
-            const offset = 100;
-            const top = target.getBoundingClientRect().top + window.scrollY - offset;
-            window.scrollTo({ top: top, behavior: 'smooth' });
-        });
-        bottomChips.appendChild(chip);
-    });
-
-    // Секции
-    finalOrder.forEach(function(cat) {
-        if (!grouped[cat]) return;
-
-        const section = document.createElement('div');
-        section.className = 'category-section collapsed';
-        section.dataset.cat = cat;
-
-        const header = document.createElement('h2');
-        header.className = 'category-header';
-        header.innerHTML = '<span>' + cat + '</span><span class="arrow">▼</span>';
-        header.addEventListener('click', function() {
-            section.classList.toggle('collapsed');
-        });
-        section.appendChild(header);
-
-        // Превью 3 случайных настоек (только для свёрнутых)
-        const shuffled = grouped[cat].slice().sort(function() { return Math.random() - 0.5; });
-        const previewNames = shuffled.slice(0, 3).map(function(t) { return t.name; });
-        if (previewNames.length > 0) {
-            const preview = document.createElement('div');
-            preview.className = 'preview-list';
-            previewNames.forEach(function(name) {
-                const item = document.createElement('span');
-                item.className = 'preview-item';
-                item.textContent = name;
-                preview.appendChild(item);
-            });
-            section.appendChild(preview);
-        }
-
-        const cardsWrap = document.createElement('div');
-        cardsWrap.className = 'cards';
-
-        grouped[cat].forEach(function(t) {
-            const card = document.createElement('div');
-            card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
-            card.dataset.name = t.name;
-            card.dataset.available = t.isAvailable ? 'true' : 'false';
-
-            const descriptionHtml = t.description ? '<div class="description">' + t.description + '</div>' : '';
-            const priceHtml = t.price ? '<div class="price">' + formatPrice(t.price) + '</div>' : '';
-            const statusText = t.isAvailable ? 'В наличии' : 'Закончилась';
-
-            card.innerHTML = '<div class="card-top">' +
-                '<div class="name">' + t.name + '</div>' +
-                priceHtml +
-                '</div>' +
-                descriptionHtml +
-                '<div class="card-bottom">' +
-                '<div class="status"><span class="dot"></span>' + statusText + '</div>' +
-                '<div class="card-controls"></div>' +
-                '</div>';
-
-            cardElements[t.name] = card;
-
-            card.addEventListener('click', function(e) {
-                if (!t.isAvailable) return;
-                if (e.target.closest('.qty-btn')) return;
-                addToCart(t.name, card);
-            });
-
-            cardsWrap.appendChild(card);
-        });
-
-        section.appendChild(cardsWrap);
-        appDiv.appendChild(section);
-    });
-
-    updateCartUI();
-});
-</script>
-</body>
-</html>
+                showToast('
+    <div class="toast" id="toast"></div>
