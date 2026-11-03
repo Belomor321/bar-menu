@@ -1106,7 +1106,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
                     state = 'backward';
                 }
             } else if (state === 'backward') {
-                hScroll.scrollLeft -= 12;
+                hScroll.scrollLeft -= 24;
                 if (hScroll.scrollLeft <= 0) {
                     hScroll.scrollLeft = 0;
                     state = 'forward';
