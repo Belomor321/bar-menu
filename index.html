@@ -681,5 +681,236 @@ document.getElementById('shareBtn').addEventListener('click', async function() {
         if (err.name !== 'AbortError') {
             try {
                 await navigator.clipboard.writeText(window.location.href);
-                showToast('
+                showToast('Ссылка скопирована!');
+            } catch (e) { showToast('Не удалось скопировать'); }
+        }
+    }
+});
+
+document.getElementById('cartBar').addEventListener('click', function() {
+    document.getElementById('modalOverlay').classList.add('visible');
+});
+document.getElementById('modalClose').addEventListener('click', function() {
+    document.getElementById('modalOverlay').classList.remove('visible');
+});
+document.getElementById('closeBtn').addEventListener('click', function() {
+    document.getElementById('modalOverlay').classList.remove('visible');
+});
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+    if (e.target.id === 'modalOverlay') e.currentTarget.classList.remove('visible');
+});
+document.getElementById('clearBtn').addEventListener('click', function() {
+    if (Object.keys(cart).length === 0) return;
+    if (confirm('Очистить всю корзину?')) clearCart();
+});
+
+// === QR-КОД (исправлено: короткий текст + уровень L) ===
+document.getElementById('showBarmenBtn').addEventListener('click', function() {
+    const items = Object.values(cart);
+    if (items.length === 0) return;
+
+    // Максимально короткий формат для QR-кода
+    let orderText = '';
+    let total = 0;
+    items.forEach(function(item, index) {
+        const itemTotal = (item.price || 0) * item.qty;
+        total += itemTotal;
+        if (index > 0) orderText += ';';
+        orderText += item.name + 'x' + item.qty;
+    });
+    if (total > 0) orderText += ';=' + total;
+
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+
+    try {
+        new QRCode(qrContainer, {
+            text: orderText,
+            width: 280,
+            height: 280,
+            colorDark: '#2c2c2c',
+            colorLight: '#ffffff',
+            correctLevel: QRCode.CorrectLevel.L
+        });
+    } catch (err) {
+        // Если всё равно не влезает — пробуем ещё короче
+        console.warn('QR переполнен, сокращаем:', err);
+        let shortText = '';
+        items.forEach(function(item, index) {
+            if (index > 0) shortText += ',';
+            shortText += item.name.substring(0, 8) + ' ' + item.qty;
+        });
+        qrContainer.innerHTML = '';
+        try {
+            new QRCode(qrContainer, {
+                text: shortText,
+                width: 280,
+                height: 280,
+                colorDark: '#2c2c2c',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.L
+            });
+            orderText = shortText;
+        } catch (e2) {
+            qrContainer.innerHTML = '<div style="color:#c0392b;padding:20px;font-size:13px;">Заказ слишком большой для QR-кода. Покажите список бармену вручную.</div>';
+            orderText = 'Заказ слишком длинный';
+        }
+    }
+
+    document.getElementById('barmenText').textContent = orderText;
+
+    document.getElementById('modalOverlay').classList.remove('visible');
+    document.getElementById('barmenOverlay').classList.add('visible');
+});
+
+document.getElementById('barmenCloseBtn').addEventListener('click', function() {
+    document.getElementById('barmenOverlay').classList.remove('visible');
+});
+document.getElementById('barmenOverlay').addEventListener('click', function(e) {
+    if (e.target.id === 'barmenOverlay') e.currentTarget.classList.remove('visible');
+});
+
+// === FIREBASE ===
+onSnapshot(collection(db, "tinctures"), function(snapshot) {
+    appDiv.innerHTML = '';
+    Object.keys(cardElements).forEach(function(k) { delete cardElements[k]; });
+    Object.keys(tinctureData).forEach(function(k) { delete tinctureData[k]; });
+    bottomChips.innerHTML = '';
+
+    if (snapshot.empty) {
+        appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
+        return;
+    }
+
+    const allTinctures = [];
+    snapshot.forEach(function(docSnap) {
+        const data = docSnap.data();
+        const t = {
+            name: data.name,
+            isAvailable: data.isAvailable,
+            description: data.description || '',
+            price: data.price,
+            category: data.category || 'Прочее'
+        };
+        allTinctures.push(t);
+        tinctureData[t.name] = t;
+    });
+
+    const grouped = {};
+    allTinctures.forEach(function(t) {
+        if (!grouped[t.category]) grouped[t.category] = [];
+        grouped[t.category].push(t);
+    });
+
+    Object.keys(grouped).forEach(function(cat) {
+        grouped[cat].sort(function(a, b) {
+            if (a.isAvailable === b.isAvailable) return a.name.localeCompare(b.name, 'ru');
+            return a.isAvailable ? -1 : 1;
+        });
+    });
+
+    const finalOrder = categoryOrder.slice();
+    Object.keys(grouped).forEach(function(cat) {
+        if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
+    });
+
+    // Чипсы снизу
+    finalOrder.forEach(function(cat) {
+        if (!grouped[cat]) return;
+        const chip = document.createElement('button');
+        chip.className = 'chip';
+        chip.dataset.cat = cat;
+        chip.textContent = cat;
+        chip.addEventListener('click', function() {
+            const target = document.querySelector('.category-section[data-cat="' + cat + '"]');
+            if (!target) return;
+            const offset = 100;
+            const top = target.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top: top, behavior: 'smooth' });
+        });
+        bottomChips.appendChild(chip);
+    });
+
+    // Функция создания карточки (используется и для превью, и для полного списка)
+    function createCard(t) {
+        const card = document.createElement('div');
+        card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
+        card.dataset.name = t.name;
+        card.dataset.available = t.isAvailable ? 'true' : 'false';
+
+        const descriptionHtml = t.description ? '<div class="description">' + t.description + '</div>' : '';
+        const priceHtml = t.price ? '<div class="price">' + formatPrice(t.price) + '</div>' : '';
+        const statusText = t.isAvailable ? 'В наличии' : 'Закончилась';
+
+        card.innerHTML = '<div class="card-top">' +
+            '<div class="name">' + t.name + '</div>' +
+            priceHtml +
+            '</div>' +
+            descriptionHtml +
+            '<div class="card-bottom">' +
+            '<div class="status"><span class="dot"></span>' + statusText + '</div>' +
+            '<div class="card-controls"></div>' +
+            '</div>';
+
+        card.addEventListener('click', function(e) {
+            if (!t.isAvailable) return;
+            if (e.target.closest('.qty-btn')) return;
+            addToCart(t.name, card);
+        });
+
+        return card;
+    }
+
+    // Секции
+    finalOrder.forEach(function(cat) {
+        if (!grouped[cat]) return;
+
+        const section = document.createElement('div');
+        section.className = 'category-section collapsed';
+        section.dataset.cat = cat;
+
+        const header = document.createElement('h2');
+        header.className = 'category-header';
+        header.innerHTML = '<span>' + cat + '</span><span class="arrow">▼</span>';
+        header.addEventListener('click', function() {
+            section.classList.toggle('collapsed');
+        });
+        section.appendChild(header);
+
+        // Превью — 3 случайные карточки (только в свёрнутом виде)
+        const shuffled = grouped[cat].slice().sort(function() { return Math.random() - 0.5; });
+        const previewTinctures = shuffled.slice(0, 3);
+        const previewWrap = document.createElement('div');
+        previewWrap.className = 'preview-cards';
+
+        previewTinctures.forEach(function(t) {
+            const previewCard = createCard(t);
+            // Запоминаем для обновления счётчиков (только если ещё нет)
+            if (!cardElements[t.name]) {
+                cardElements[t.name] = previewCard;
+            }
+            previewWrap.appendChild(previewCard);
+        });
+        section.appendChild(previewWrap);
+
+        // Полный список карточек
+        const cardsWrap = document.createElement('div');
+        cardsWrap.className = 'cards';
+
+        grouped[cat].forEach(function(t) {
+            const card = createCard(t);
+            // Для полного списка — если карточка превью уже есть, заменяем
+            cardElements[t.name] = card;
+            cardsWrap.appendChild(card);
+        });
+
+        section.appendChild(cardsWrap);
+        appDiv.appendChild(section);
+    });
+
+    updateCartUI();
+});
+</script>
+</body>
+</html>
     <div class="toast" id="toast"></div>
