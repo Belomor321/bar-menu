@@ -1069,7 +1069,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         if (!hScroll) return;
         
         let paused = false;
-        let state = 'forward';
+        let state = 'forward'; // 'forward' | 'pauseEnd' | 'backward' | 'pauseStart'
         let pauseUntil = 0;
         
         const pauseOn = function() { paused = true; };
@@ -1098,10 +1098,10 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
             if (state === 'forward') {
                 hScroll.scrollLeft += 1;
                 if (hScroll.scrollLeft >= maxScroll - 1) {
-                    state = 'pause';
-                    pauseUntil = now + 1500;
+                    state = 'pauseEnd';
+                    pauseUntil = now + 1500; // пауза в конце 1.5 сек
                 }
-            } else if (state === 'pause') {
+            } else if (state === 'pauseEnd') {
                 if (now >= pauseUntil) {
                     state = 'backward';
                 }
@@ -1109,6 +1109,11 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
                 hScroll.scrollLeft -= 24;
                 if (hScroll.scrollLeft <= 0) {
                     hScroll.scrollLeft = 0;
+                    state = 'pauseStart';
+                    pauseUntil = now + 1000; // пауза в начале 1 сек
+                }
+            } else if (state === 'pauseStart') {
+                if (now >= pauseUntil) {
                     state = 'forward';
                 }
             }
