@@ -71,21 +71,17 @@ body {
     font-weight: 400;
     transition: color 0.2s;
 }
-.category-header:hover .show-all-label { color: #2c2c2c; }
 .category-header .arrow {
     font-size: 10px; color: #bbbbbb; transition: transform 0.3s ease;
 }
 .category-section.collapsed .category-header .arrow { transform: rotate(-90deg); }
 
-/* Горизонтальная лента с карточками */
+/* Горизонтальная лента */
 .horizontal-scroll {
     display: flex; gap: 10px;
     overflow-x: auto;
-    scroll-behavior: smooth;
-    padding: 12px 4px 20px 4px;
+    padding: 12px 12px 20px 12px;
     margin: 0 -12px;
-    padding-left: 12px;
-    padding-right: 12px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
 }
@@ -93,7 +89,7 @@ body {
 
 .h-scroll-card {
     flex-shrink: 0;
-    width: 160px;
+    width: 150px;
     background: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 14px;
@@ -106,7 +102,12 @@ body {
     position: relative;
 }
 .h-scroll-card:active { transform: scale(0.98); background: #fafafa; }
-.h-scroll-card.unavailable { background: #fafafa; opacity: 0.55; cursor: default; }
+.h-scroll-card.unavailable { 
+    background: #fafafa; 
+    cursor: default; 
+    opacity: 0.4; 
+}
+.h-scroll-card.selected { border-color: #2c2c2c; background: #fcfcfc; }
 .h-scroll-card .h-name {
     font-size: 13px; font-weight: 600; color: #2c2c2c;
     line-height: 1.25; word-break: break-word;
@@ -114,17 +115,26 @@ body {
 }
 .h-scroll-card .h-price {
     font-size: 14px; font-weight: 600; color: #2c2c2c;
-}
-.h-scroll-card .h-status {
-    font-size: 10px; color: #999999; text-transform: uppercase;
-    letter-spacing: 0.3px; margin-top: 2px;
+    margin-top: auto;
 }
 .h-scroll-card .h-controls {
     display: flex; align-items: center; gap: 6px;
-    margin-top: 6px;
+    margin-top: 8px;
+    min-height: 26px;
 }
 .h-scroll-card .h-controls .qty-btn {
     width: 26px; height: 26px; font-size: 14px;
+}
+.h-scroll-card .h-controls .qty-btn.plus-only {
+    width: 100%;
+    height: 26px;
+    border-radius: 13px;
+    font-size: 12px;
+    padding: 0 10px;
+}
+.h-scroll-card .h-controls .qty-value {
+    font-size: 13px;
+    min-width: 18px;
 }
 
 /* Карточка «Показать все» */
@@ -156,7 +166,7 @@ body {
     line-height: 1.3;
 }
 
-/* Полный список карточек (когда раскрыто) */
+/* Полный список */
 .cards {
     display: flex; flex-direction: column; gap: 8px;
     margin: 12px 0 24px 0;
@@ -641,7 +651,7 @@ function clearCart() {
 
 function updateCartUI(pulseName) {
     Object.keys(cardElements).forEach(function(name) {
-        const cards = cardElements[name]; // теперь массив карточек
+        const cards = cardElements[name];
         if (!Array.isArray(cards)) return;
         
         const qty = cart[name] ? cart[name].qty : 0;
@@ -664,7 +674,8 @@ function updateCartUI(pulseName) {
                 }
             } else {
                 card.classList.remove('selected');
-                controls.innerHTML = '<button class="qty-btn plus-only" data-action="plus">+</button>';
+                const plusLabel = card.classList.contains('h-scroll-card') ? '+' : '+ Добавить';
+                controls.innerHTML = '<button class="qty-btn plus-only" data-action="plus">' + plusLabel + '</button>';
             }
 
             controls.querySelectorAll('.qty-btn').forEach(function(btn) {
@@ -845,7 +856,7 @@ document.getElementById('barmenOverlay').addEventListener('click', function(e) {
 onSnapshot(collection(db, "tinctures"), function(snapshot) {
     // Останавливаем все автоскроллы
     Object.keys(autoScrollIntervals).forEach(function(k) {
-        clearInterval(autoScrollIntervals[k]);
+        cancelAnimationFrame(autoScrollIntervals[k]);
         delete autoScrollIntervals[k];
     });
     
@@ -908,7 +919,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         bottomChips.appendChild(chip);
     });
 
-    // Функция создания полной карточки (для раскрытого списка)
+    // Полная карточка (для раскрытого списка)
     function createCard(t) {
         const card = document.createElement('div');
         card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
@@ -938,18 +949,16 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         return card;
     }
 
-    // Функция создания компактной карточки для горизонтальной ленты
+    // Компактная карточка для горизонтальной ленты (без статуса)
     function createHScrollCard(t) {
         const card = document.createElement('div');
         card.className = 'h-scroll-card ' + (t.isAvailable ? 'available' : 'unavailable');
         card.dataset.name = t.name;
 
         const priceHtml = t.price ? '<div class="h-price">' + formatPrice(t.price) + '</div>' : '';
-        const statusText = t.isAvailable ? 'Есть' : 'Нет';
 
         card.innerHTML = '<div class="h-name">' + t.name + '</div>' +
             priceHtml +
-            '<div class="h-status">' + statusText + '</div>' +
             '<div class="h-controls"></div>';
 
         card.addEventListener('click', function(e) {
@@ -985,20 +994,18 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         });
         section.appendChild(header);
 
-        // Горизонтальная лента со всеми карточками (видна в свёрнутом виде)
+        // Горизонтальная лента
         const hScroll = document.createElement('div');
         hScroll.className = 'horizontal-scroll';
         hScroll.dataset.cat = cat;
 
         grouped[cat].forEach(function(t) {
             const hCard = createHScrollCard(t);
-            // Добавляем в массив карточек для этого товара
             if (!cardElements[t.name]) cardElements[t.name] = [];
             cardElements[t.name].push(hCard);
             hScroll.appendChild(hCard);
         });
 
-        // Карточка «Показать все настойки»
         const showAllCard = document.createElement('div');
         showAllCard.className = 'show-all-card';
         showAllCard.innerHTML = '<div class="all-icon">→</div><div class="all-text">Показать все настойки</div>';
@@ -1011,7 +1018,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
 
         section.appendChild(hScroll);
 
-        // Полный список (виден в раскрытом виде)
+        // Полный список
         const cardsWrap = document.createElement('div');
         cardsWrap.className = 'cards';
 
@@ -1026,45 +1033,64 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         appDiv.appendChild(section);
     });
 
-    // Автоскролл для всех свёрнутых категорий
+    // Автоскролл через requestAnimationFrame (плавно)
     function startAutoScroll(cat) {
         if (autoScrollIntervals[cat]) return;
         const hScroll = document.querySelector('.horizontal-scroll[data-cat="' + cat + '"]');
         if (!hScroll) return;
         
-        autoScrollIntervals[cat] = setInterval(function() {
-            if (hScroll.scrollLeft + hScroll.clientWidth >= hScroll.scrollWidth - 5) {
-                // Дошли до конца — плавно возвращаемся
-                hScroll.scrollTo({ left: 0, behavior: 'smooth' });
-            } else {
-                hScroll.scrollLeft += 1;
+        let direction = 1;
+        let paused = false;
+        
+        // Пауза при касании
+        hScroll.addEventListener('touchstart', function() { paused = true; }, { passive: true });
+        hScroll.addEventListener('touchend', function() { 
+            setTimeout(function() { paused = false; }, 2000); 
+        }, { passive: true });
+        hScroll.addEventListener('mouseenter', function() { paused = true; });
+        hScroll.addEventListener('mouseleave', function() { paused = false; });
+        
+        function animate() {
+            if (!document.body.contains(hScroll)) {
+                delete autoScrollIntervals[cat];
+                return;
             }
-        }, 30);
+            
+            if (!paused) {
+                if (direction === 1) {
+                    hScroll.scrollLeft += 0.8;
+                    if (hScroll.scrollLeft + hScroll.clientWidth >= hScroll.scrollWidth - 1) {
+                        direction = -1;
+                    }
+                } else {
+                    hScroll.scrollLeft -= 0.8;
+                    if (hScroll.scrollLeft <= 0) {
+                        direction = 1;
+                    }
+                }
+            }
+            
+            autoScrollIntervals[cat] = requestAnimationFrame(animate);
+        }
+        
+        autoScrollIntervals[cat] = requestAnimationFrame(animate);
     }
 
     function stopAutoScroll(cat) {
         if (autoScrollIntervals[cat]) {
-            clearInterval(autoScrollIntervals[cat]);
+            cancelAnimationFrame(autoScrollIntervals[cat]);
             delete autoScrollIntervals[cat];
         }
     }
 
-    // Запускаем автоскролл для всех категорий (они все свёрнуты по умолчанию)
+    // Запускаем автоскролл для всех свёрнутых категорий
     setTimeout(function() {
         finalOrder.forEach(function(cat) {
-            if (grouped[cat] && !collapsedCategories.has(cat)) {
+            if (grouped[cat]) {
                 startAutoScroll(cat);
             }
         });
-    }, 200);
-
-    // Останавливаем автоскролл при касании ленты пользователем
-    document.querySelectorAll('.horizontal-scroll').forEach(function(el) {
-        el.addEventListener('touchstart', function() {
-            const cat = el.dataset.cat;
-            stopAutoScroll(cat);
-        }, { passive: true });
-    });
+    }, 300);
 
     updateCartUI();
 });
