@@ -76,7 +76,6 @@ body {
 }
 .category-section.collapsed .category-header .arrow { transform: rotate(-90deg); }
 
-/* Горизонтальная лента — БЕЗ scroll-behavior: smooth */
 .horizontal-scroll {
     display: flex; gap: 10px;
     overflow-x: auto;
@@ -89,17 +88,18 @@ body {
 
 .h-scroll-card {
     flex-shrink: 0;
-    width: 150px;
+    width: 160px;
     background: #ffffff;
     border: 1px solid #eeeeee;
     border-radius: 14px;
-    padding: 12px;
+    padding: 14px 12px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
     transition: transform 0.15s ease, background 0.15s ease;
     position: relative;
+    min-height: 110px;
 }
 .h-scroll-card:active { transform: scale(0.98); background: #fafafa; }
 .h-scroll-card.unavailable { 
@@ -109,32 +109,40 @@ body {
 }
 .h-scroll-card.selected { border-color: #2c2c2c; background: #fcfcfc; }
 .h-scroll-card .h-name {
-    font-size: 13px; font-weight: 600; color: #2c2c2c;
-    line-height: 1.25; word-break: break-word;
-    min-height: 34px;
+    font-size: 16px; font-weight: 600; color: #2c2c2c;
+    line-height: 1.2; word-break: break-word;
+    flex-grow: 1;
 }
 .h-scroll-card .h-price {
     font-size: 14px; font-weight: 600; color: #2c2c2c;
-    margin-top: auto;
 }
-.h-scroll-card .h-controls {
-    display: flex; align-items: center; gap: 6px;
-    margin-top: 8px;
-    min-height: 26px;
+
+/* Блок счётчика в ленте — появляется после первого тапа */
+.h-scroll-card .h-counter {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    margin-top: 4px;
 }
-.h-scroll-card .h-controls .qty-btn {
-    width: 26px; height: 26px; font-size: 14px;
+.h-scroll-card.selected .h-price {
+    display: none;
 }
-.h-scroll-card .h-controls .qty-btn.plus-only {
-    width: 100%;
-    height: 26px;
-    border-radius: 13px;
-    font-size: 12px;
-    padding: 0 10px;
+.h-scroll-card.selected .h-counter {
+    display: flex;
 }
-.h-scroll-card .h-controls .qty-value {
-    font-size: 13px;
-    min-width: 18px;
+.h-scroll-card .h-counter .qty-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+.h-scroll-card .h-counter .qty-value {
+    font-size: 15px;
+    font-weight: 700;
+    min-width: 22px;
+    text-align: center;
+    flex-grow: 1;
 }
 
 .show-all-card {
@@ -655,34 +663,64 @@ function updateCartUI(pulseName) {
         const qty = cart[name] ? cart[name].qty : 0;
         
         cards.forEach(function(card) {
-            const controls = card.querySelector('.h-controls, .card-controls');
-            if (!controls) return;
-            
-            if (qty > 0) {
-                card.classList.add('selected');
-                controls.innerHTML = '<button class="qty-btn" data-action="minus">−</button>' +
-                    '<span class="qty-value">' + qty + '</span>' +
-                    '<button class="qty-btn" data-action="plus">+</button>';
-                if (pulseName === name) {
-                    const el = controls.querySelector('.qty-value');
-                    if (el) {
-                        el.classList.add('pulse');
-                        setTimeout(function() { el.classList.remove('pulse'); }, 320);
+            if (card.classList.contains('h-scroll-card')) {
+                // Компактная карточка в ленте
+                const counter = card.querySelector('.h-counter');
+                if (qty > 0) {
+                    card.classList.add('selected');
+                    if (counter) {
+                        counter.innerHTML = '<button class="qty-btn" data-action="minus">−</button>' +
+                            '<span class="qty-value">' + qty + '</span>' +
+                            '<button class="qty-btn" data-action="plus">+</button>';
+                        if (pulseName === name) {
+                            const el = counter.querySelector('.qty-value');
+                            if (el) {
+                                el.classList.add('pulse');
+                                setTimeout(function() { el.classList.remove('pulse'); }, 320);
+                            }
+                        }
+                        counter.querySelectorAll('.qty-btn').forEach(function(btn) {
+                            btn.onclick = function(e) {
+                                e.stopPropagation();
+                                if (btn.dataset.action === 'plus') addToCart(name, card);
+                                else removeFromCart(name);
+                            };
+                        });
                     }
+                } else {
+                    card.classList.remove('selected');
+                    if (counter) counter.innerHTML = '';
                 }
             } else {
-                card.classList.remove('selected');
-                const plusLabel = card.classList.contains('h-scroll-card') ? '+' : '+ Добавить';
-                controls.innerHTML = '<button class="qty-btn plus-only" data-action="plus">' + plusLabel + '</button>';
-            }
+                // Полная карточка
+                const controls = card.querySelector('.card-controls');
+                if (!controls) return;
+                
+                if (qty > 0) {
+                    card.classList.add('selected');
+                    controls.innerHTML = '<button class="qty-btn" data-action="minus">−</button>' +
+                        '<span class="qty-value">' + qty + '</span>' +
+                        '<button class="qty-btn" data-action="plus">+</button>';
+                    if (pulseName === name) {
+                        const el = controls.querySelector('.qty-value');
+                        if (el) {
+                            el.classList.add('pulse');
+                            setTimeout(function() { el.classList.remove('pulse'); }, 320);
+                        }
+                    }
+                } else {
+                    card.classList.remove('selected');
+                    controls.innerHTML = '<button class="qty-btn plus-only" data-action="plus">+ Добавить</button>';
+                }
 
-            controls.querySelectorAll('.qty-btn').forEach(function(btn) {
-                btn.onclick = function(e) {
-                    e.stopPropagation();
-                    if (btn.dataset.action === 'plus') addToCart(name, card);
-                    else removeFromCart(name);
-                };
-            });
+                controls.querySelectorAll('.qty-btn').forEach(function(btn) {
+                    btn.onclick = function(e) {
+                        e.stopPropagation();
+                        if (btn.dataset.action === 'plus') addToCart(name, card);
+                        else removeFromCart(name);
+                    };
+                });
+            }
         });
     });
 
@@ -852,7 +890,6 @@ document.getElementById('barmenOverlay').addEventListener('click', function(e) {
 
 // === FIREBASE ===
 onSnapshot(collection(db, "tinctures"), function(snapshot) {
-    // Останавливаем все автоскроллы
     Object.keys(autoScrollIntervals).forEach(function(k) {
         clearInterval(autoScrollIntervals[k]);
         delete autoScrollIntervals[k];
@@ -900,7 +937,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
     });
 
-    // Чипсы снизу
     finalOrder.forEach(function(cat) {
         if (!grouped[cat]) return;
         const chip = document.createElement('button');
@@ -917,7 +953,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         bottomChips.appendChild(chip);
     });
 
-    // Полная карточка
     function createCard(t) {
         const card = document.createElement('div');
         card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
@@ -947,7 +982,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         return card;
     }
 
-    // Компактная карточка для ленты
     function createHScrollCard(t) {
         const card = document.createElement('div');
         card.className = 'h-scroll-card ' + (t.isAvailable ? 'available' : 'unavailable');
@@ -957,7 +991,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
 
         card.innerHTML = '<div class="h-name">' + t.name + '</div>' +
             priceHtml +
-            '<div class="h-controls"></div>';
+            '<div class="h-counter"></div>';
 
         card.addEventListener('click', function(e) {
             if (!t.isAvailable) return;
@@ -992,7 +1026,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         });
         section.appendChild(header);
 
-        // Горизонтальная лента
         const hScroll = document.createElement('div');
         hScroll.className = 'horizontal-scroll';
         hScroll.dataset.cat = cat;
@@ -1016,7 +1049,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
 
         section.appendChild(hScroll);
 
-        // Полный список
         const cardsWrap = document.createElement('div');
         cardsWrap.className = 'cards';
 
@@ -1031,17 +1063,15 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         appDiv.appendChild(section);
     });
 
-    // === АВТОСКРОЛЛ: только вперёд, в конце пауза и быстрый возврат ===
     function startAutoScroll(cat) {
         if (autoScrollIntervals[cat]) return;
         const hScroll = document.querySelector('.horizontal-scroll[data-cat="' + cat + '"]');
         if (!hScroll) return;
         
         let paused = false;
-        let atEnd = false;
-        let returnTimer = null;
+        let state = 'forward';
+        let pauseUntil = 0;
         
-        // Пауза при касании/наведении
         const pauseOn = function() { paused = true; };
         const pauseOff = function() { 
             setTimeout(function() { paused = false; }, 1500); 
@@ -1051,7 +1081,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         hScroll.addEventListener('mouseenter', pauseOn);
         hScroll.addEventListener('mouseleave', pauseOff);
         
-        // Каждые 20 мс сдвигаем на 1px вперёд
         autoScrollIntervals[cat] = setInterval(function() {
             if (!document.body.contains(hScroll)) {
                 clearInterval(autoScrollIntervals[cat]);
@@ -1060,20 +1089,28 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
             }
             
             if (paused) return;
-            if (atEnd) return;
             
             const maxScroll = hScroll.scrollWidth - hScroll.clientWidth;
             if (maxScroll <= 0) return;
             
-            hScroll.scrollLeft += 1;
+            const now = Date.now();
             
-            if (hScroll.scrollLeft >= maxScroll - 1) {
-                // Дошли до конца — пауза 1.5 сек и быстрый возврат
-                atEnd = true;
-                returnTimer = setTimeout(function() {
+            if (state === 'forward') {
+                hScroll.scrollLeft += 1;
+                if (hScroll.scrollLeft >= maxScroll - 1) {
+                    state = 'pause';
+                    pauseUntil = now + 1500;
+                }
+            } else if (state === 'pause') {
+                if (now >= pauseUntil) {
+                    state = 'backward';
+                }
+            } else if (state === 'backward') {
+                hScroll.scrollLeft -= 4;
+                if (hScroll.scrollLeft <= 0) {
                     hScroll.scrollLeft = 0;
-                    atEnd = false;
-                }, 1500);
+                    state = 'forward';
+                }
             }
         }, 20);
     }
@@ -1085,7 +1122,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         }
     }
 
-    // Запускаем для всех свёрнутых категорий
     setTimeout(function() {
         finalOrder.forEach(function(cat) {
             if (grouped[cat]) {
