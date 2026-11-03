@@ -1096,7 +1096,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
             const now = Date.now();
             
             if (state === 'forward') {
-                hScroll.scrollLeft += 0.7;
+                hScroll.scrollLeft += 1;
                 if (hScroll.scrollLeft >= maxScroll - 1) {
                     state = 'pauseEnd';
                     pauseUntil = now + 1500; // пауза в конце 1.5 сек
@@ -1117,7 +1117,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
                     state = 'forward';
                 }
             }
-        }, 25);
+        }, 30);
     }
 
     function stopAutoScroll(cat) {
