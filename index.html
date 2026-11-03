@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Наличие настоек</title>
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; padding: 0; }
@@ -65,7 +64,6 @@ body {
 }
 .category-section.collapsed .category-header .arrow { transform: rotate(-90deg); }
 
-/* Превью: 3 карточки, видны только в свёрнутой категории */
 .preview-cards {
     display: flex; flex-direction: column; gap: 8px;
     margin: 12px 0 20px 0;
@@ -73,7 +71,6 @@ body {
 .category-section:not(.collapsed) .preview-cards { display: none; }
 .category-section.collapsed .cards { display: none; }
 
-/* Карточки */
 .cards {
     display: flex; flex-direction: column; gap: 8px;
     margin: 12px 0 24px 0;
@@ -313,27 +310,29 @@ body {
     padding: 24px 20px;
     padding-bottom: max(24px, env(safe-area-inset-bottom));
     animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
-    text-align: center;
 }
 .barmen-title {
     font-size: 14px; text-transform: uppercase;
     letter-spacing: 2px; color: #999999;
-    margin-bottom: 20px;
+    text-align: center; margin-bottom: 20px;
 }
-#qrcode {
-    display: flex; justify-content: center;
-    padding: 10px 0;
-}
-#qrcode img, #qrcode canvas {
-    border-radius: 8px;
-    max-width: 100%;
-    height: auto;
-}
-#barmenText {
-    font-size: 12px; color: #999999;
-    text-align: center; margin-top: 14px;
-    white-space: pre-line; line-height: 1.5;
+.barmen-list {
     font-family: 'Courier New', monospace;
+    font-size: 20px; line-height: 1.6; color: #2c2c2c;
+}
+.barmen-item {
+    display: flex; justify-content: space-between;
+    align-items: baseline; padding: 8px 0;
+    border-bottom: 1px dashed #eeeeee;
+}
+.barmen-item:last-child { border-bottom: none; }
+.barmen-item-name { font-weight: 600; }
+.barmen-item-qty { font-size: 24px; font-weight: 700; color: #2c2c2c; }
+.barmen-total {
+    margin-top: 20px; padding-top: 16px;
+    border-top: 2px solid #2c2c2c;
+    display: flex; justify-content: space-between;
+    font-size: 20px; font-weight: 700;
 }
 .barmen-btn {
     margin-top: 24px; width: 100%; padding: 16px;
@@ -430,10 +429,9 @@ body {
 
     <div class="modal-overlay" id="barmenOverlay">
         <div class="barmen-modal">
-            <div class="barmen-title">Покажите QR-код бармену</div>
-            <div id="qrcode"></div>
-            <div id="barmenText"></div>
-            <button class="barmen-btn" id="barmenCloseBtn">Закрыть</button>
+            <div class="barmen-title">Заказ бармену</div>
+            <div class="barmen-list" id="barmenList"></div>
+            <button class="barmen-btn" id="barmenCloseBtn">Готово</button>
         </div>
     </div>
 <script type="module">
@@ -493,7 +491,6 @@ function showToast(text) {
     toastTimeout = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
 }
 
-// Анимация бокала (исправлено: работает и при первом нажатии)
 function flyGlass(fromElement) {
     const cartBar = document.getElementById('cartBar');
     if (!cartBar) return;
@@ -704,60 +701,29 @@ document.getElementById('clearBtn').addEventListener('click', function() {
     if (confirm('Очистить всю корзину?')) clearCart();
 });
 
-// === QR-КОД (исправлено: короткий текст + уровень L) ===
+// === ПОКАЗАТЬ БАРМЕНУ (крупный текст) ===
 document.getElementById('showBarmenBtn').addEventListener('click', function() {
     const items = Object.values(cart);
     if (items.length === 0) return;
 
-    // Максимально короткий формат для QR-кода
-    let orderText = '';
+    const listEl = document.getElementById('barmenList');
+    let html = '';
     let total = 0;
-    items.forEach(function(item, index) {
+
+    items.forEach(function(item) {
         const itemTotal = (item.price || 0) * item.qty;
         total += itemTotal;
-        if (index > 0) orderText += ';';
-        orderText += item.name + 'x' + item.qty;
+        html += '<div class="barmen-item">' +
+            '<span class="barmen-item-name">' + item.name + '</span>' +
+            '<span class="barmen-item-qty">× ' + item.qty + '</span>' +
+            '</div>';
     });
-    if (total > 0) orderText += ';=' + total;
 
-    const qrContainer = document.getElementById('qrcode');
-    qrContainer.innerHTML = '';
+    listEl.innerHTML = html;
 
-    try {
-        new QRCode(qrContainer, {
-            text: orderText,
-            width: 280,
-            height: 280,
-            colorDark: '#2c2c2c',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.L
-        });
-    } catch (err) {
-        // Если всё равно не влезает — пробуем ещё короче
-        console.warn('QR переполнен, сокращаем:', err);
-        let shortText = '';
-        items.forEach(function(item, index) {
-            if (index > 0) shortText += ',';
-            shortText += item.name.substring(0, 8) + ' ' + item.qty;
-        });
-        qrContainer.innerHTML = '';
-        try {
-            new QRCode(qrContainer, {
-                text: shortText,
-                width: 280,
-                height: 280,
-                colorDark: '#2c2c2c',
-                colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.L
-            });
-            orderText = shortText;
-        } catch (e2) {
-            qrContainer.innerHTML = '<div style="color:#c0392b;padding:20px;font-size:13px;">Заказ слишком большой для QR-кода. Покажите список бармену вручную.</div>';
-            orderText = 'Заказ слишком длинный';
-        }
+    if (total > 0) {
+        listEl.innerHTML += '<div class="barmen-total"><span>Итого:</span><span>' + total + ' ₽</span></div>';
     }
-
-    document.getElementById('barmenText').textContent = orderText;
 
     document.getElementById('modalOverlay').classList.remove('visible');
     document.getElementById('barmenOverlay').classList.add('visible');
@@ -814,7 +780,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
     });
 
-    // Чипсы снизу
     finalOrder.forEach(function(cat) {
         if (!grouped[cat]) return;
         const chip = document.createElement('button');
@@ -831,7 +796,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         bottomChips.appendChild(chip);
     });
 
-    // Функция создания карточки (используется и для превью, и для полного списка)
     function createCard(t) {
         const card = document.createElement('div');
         card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
@@ -861,7 +825,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         return card;
     }
 
-    // Секции
     finalOrder.forEach(function(cat) {
         if (!grouped[cat]) return;
 
@@ -877,7 +840,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         });
         section.appendChild(header);
 
-        // Превью — 3 случайные карточки (только в свёрнутом виде)
+        // Превью — 3 случайные карточки
         const shuffled = grouped[cat].slice().sort(function() { return Math.random() - 0.5; });
         const previewTinctures = shuffled.slice(0, 3);
         const previewWrap = document.createElement('div');
@@ -885,7 +848,6 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
 
         previewTinctures.forEach(function(t) {
             const previewCard = createCard(t);
-            // Запоминаем для обновления счётчиков (только если ещё нет)
             if (!cardElements[t.name]) {
                 cardElements[t.name] = previewCard;
             }
@@ -893,13 +855,12 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         });
         section.appendChild(previewWrap);
 
-        // Полный список карточек
+        // Полный список
         const cardsWrap = document.createElement('div');
         cardsWrap.className = 'cards';
 
         grouped[cat].forEach(function(t) {
             const card = createCard(t);
-            // Для полного списка — если карточка превью уже есть, заменяем
             cardElements[t.name] = card;
             cardsWrap.appendChild(card);
         });
