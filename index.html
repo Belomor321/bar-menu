@@ -4,16 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Наличие настоек</title>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
 <style>
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; padding: 0; }
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background: #ffffff; color: #2c2c2c; line-height: 1.4;
-    -webkit-font-smoothing: antialiased; padding-bottom: 160px;
+    -webkit-font-smoothing: antialiased; padding-bottom: 150px;
 }
+
+/* Логотип */
 .logo-wrap { text-align: center; padding: 16px 12px 8px 12px; }
 .logo-wrap .logo { height: 90px; width: auto; display: inline-block; }
+
+/* Скромная кнопка "Поделиться" */
 .share-btn {
     display: inline-flex; align-items: center; gap: 6px;
     margin-top: 4px; padding: 6px 14px; border-radius: 16px;
@@ -21,14 +26,21 @@ body {
     font-size: 12px; font-weight: 400; font-family: inherit;
     cursor: pointer; transition: all 0.2s ease;
 }
-.share-btn:active { transform: scale(0.95); background: #f5f5f5; color: #2c2c2c; border-color: #bbbbbb; }
-.hint {
-    text-align: center; font-size: 13px; color: #5a5a5a; font-weight: 500;
-    padding: 12px 20px 16px 20px; line-height: 1.55;
-    max-width: 420px; margin: 0 auto; letter-spacing: 0.1px;
+.share-btn:active {
+    transform: scale(0.95); background: #f5f5f5;
+    color: #2c2c2c; border-color: #bbbbbb;
 }
-.hint .hint-emoji { display: inline-block; margin-right: 4px; font-size: 15px; }
-.hint strong { color: #1f1f1f; font-weight: 700; }
+
+/* Подсказка */
+.hint {
+    text-align: center; font-size: 13px; color: #777777;
+    padding: 10px 20px 14px 20px; line-height: 1.55;
+    max-width: 420px; margin: 0 auto; font-weight: 400;
+}
+.hint strong { color: #1a1a1a; font-weight: 700; }
+.hint em { font-style: normal; color: #2c2c2c; font-weight: 500; }
+
+/* Поиск */
 .search-row {
     position: sticky; top: 0; z-index: 100;
     background: rgba(255, 255, 255, 0.96);
@@ -43,130 +55,199 @@ body {
     outline: none; min-width: 0;
 }
 .search-row .search-input:focus { border-color: #2c2c2c; background: #ffffff; }
+
+/* Категории */
 .category-section { padding: 0 12px; }
 .category-section.hidden { display: none; }
+
 .category-header {
-    position: sticky; top: 54px; z-index: 50;
     display: flex; justify-content: space-between; align-items: center;
     padding: 16px 4px; margin: 0;
     font-size: 12px; font-weight: 600; letter-spacing: 3px;
     text-transform: uppercase; color: #2c2c2c;
     cursor: pointer; border-bottom: 1px solid #eeeeee;
     user-select: none; -webkit-user-select: none;
-    background: rgba(255, 255, 255, 0.97);
-    backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    transition: padding 0.2s ease;
 }
-.category-section.collapsed .category-header {
-    border-bottom: 1px solid #e3e3e3;
-    border-radius: 0 0 10px 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+.category-header .arrow {
+    font-size: 10px; color: #bbbbbb; transition: transform 0.3s ease;
 }
-.category-header .arrow { font-size: 10px; color: #bbbbbb; transition: transform 0.3s ease; }
 .category-section.collapsed .category-header .arrow { transform: rotate(-90deg); }
 .category-section.collapsed .cards { display: none; }
-.category-section.collapsed .show-all-btn { display: none; }
-.cards { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 8px 0; }
+
+/* Превью 3 случайных настоек */
+.preview-list {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 10px 4px 14px 4px;
+    border-bottom: 1px solid #f5f5f5;
+}
+.preview-item {
+    font-size: 11px; color: #777777; background: #f8f8f8;
+    padding: 4px 10px; border-radius: 12px;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; max-width: 100%;
+}
+.category-section:not(.collapsed) .preview-list { display: none; }
+
+/* Карточки */
+.cards {
+    display: flex; flex-direction: column; gap: 8px;
+    margin: 12px 0 24px 0;
+}
 .card {
-    background: #ffffff; border: 1px solid #eeeeee;
-    border-radius: 14px; padding: 14px 14px 12px 14px;
-    display: flex; flex-direction: column; gap: 2px;
-    cursor: pointer; position: relative;
+    background: #ffffff; border: 1px solid #eeeeee; border-radius: 14px;
+    padding: 14px 14px 12px 14px; display: flex; flex-direction: column;
+    gap: 2px; cursor: pointer; position: relative;
     transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
 }
 .card:active { transform: scale(0.985); background: #fafafa; }
 .card.unavailable { background: #fafafa; cursor: default; opacity: 0.55; }
 .card.selected { border-color: #2c2c2c; background: #fcfcfc; }
-.card.hidden-by-random { display: none; }
-.card-top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.card .name { font-size: 15px; font-weight: 600; color: #2c2c2c; line-height: 1.25; word-break: break-word; }
-.card .price { font-size: 15px; font-weight: 600; color: #2c2c2c; white-space: nowrap; flex-shrink: 0; }
+
+.card-top {
+    display: flex; justify-content: space-between;
+    align-items: baseline; gap: 12px;
+}
+.card .name {
+    font-size: 15px; font-weight: 600; color: #2c2c2c;
+    line-height: 1.25; word-break: break-word;
+}
+.card .price {
+    font-size: 15px; font-weight: 600; color: #2c2c2c;
+    white-space: nowrap; flex-shrink: 0;
+}
 .card.unavailable .price { color: #999999; }
-.card .description { font-size: 12px; color: #999999; line-height: 1.35; word-break: break-word; margin-top: 2px; }
-.card-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; gap: 10px; min-height: 30px; }
-.card .status { font-size: 11px; color: #999999; display: flex; align-items: center; gap: 6px; letter-spacing: 0.3px; text-transform: uppercase; font-weight: 500; }
-.card .status .dot { width: 6px; height: 6px; border-radius: 50%; background: #2ecc71; display: inline-block; flex-shrink: 0; }
+.card .description {
+    font-size: 12px; color: #999999; line-height: 1.35;
+    word-break: break-word; margin-top: 2px;
+}
+.card-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; gap: 10px; min-height: 30px;
+}
+.card .status {
+    font-size: 11px; color: #999999; display: flex;
+    align-items: center; gap: 6px;
+    letter-spacing: 0.3px; text-transform: uppercase; font-weight: 500;
+}
+.card .status .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #2ecc71; display: inline-block; flex-shrink: 0;
+}
 .card.unavailable .status .dot { background: #cccccc; }
+
+/* Кнопки */
 .card-controls { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .qty-btn {
     width: 30px; height: 30px; border-radius: 50%;
     border: 1px solid #dddddd; background: #ffffff;
     font-size: 16px; font-weight: 500; color: #2c2c2c;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    padding: 0; line-height: 1; font-family: inherit;
-    transition: transform 0.1s ease, background 0.1s ease;
+    cursor: pointer; display: flex; align-items: center;
+    justify-content: center; padding: 0; line-height: 1;
+    font-family: inherit;
 }
 .qty-btn:active { transform: scale(0.88); background: #f0f0f0; }
-.qty-btn.plus-only { width: auto; padding: 0 16px; height: 30px; border-radius: 15px; font-size: 13px; font-weight: 600; }
-.qty-value { font-size: 14px; font-weight: 600; min-width: 20px; text-align: center; color: #2c2c2c; transition: transform 0.2s ease; }
-.qty-value.pulse { animation: pop 0.3s ease; }
-@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.35); } 100% { transform: scale(1); } }
-.show-all-btn {
-    display: block; width: 100%; margin: 4px 0 24px 0;
-    padding: 12px 16px; border-radius: 12px;
-    border: 1px dashed #cccccc; background: #fafafa;
-    color: #555555; font-size: 13px; font-weight: 600;
-    letter-spacing: 0.3px; cursor: pointer; font-family: inherit;
-    text-align: center; transition: all 0.2s ease;
+.qty-btn.plus-only {
+    width: auto; padding: 0 16px; height: 30px;
+    border-radius: 15px; font-size: 13px; font-weight: 600;
 }
-.show-all-btn:hover { border-color: #999999; color: #2c2c2c; }
-.show-all-btn:active { transform: scale(0.98); background: #f0f0f0; border-color: #999999; color: #2c2c2c; }
-.show-all-btn .show-all-count { color: #999999; font-weight: 500; margin-left: 4px; }
-.show-all-btn.hidden { display: none; }
-.category-section.all-shown .cards { margin-bottom: 24px; }
-.loading { text-align: center; font-size: 14px; padding: 40px 20px; color: #999999; }
+.qty-value {
+    font-size: 14px; font-weight: 600; min-width: 20px;
+    text-align: center; color: #2c2c2c;
+}
+.qty-value.pulse { animation: pop 0.3s ease; }
+@keyframes pop {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.35); }
+    100% { transform: scale(1); }
+}
+
+.loading {
+    text-align: center; font-size: 14px;
+    padding: 40px 20px; color: #999999;
+}
+
+/* Анимация бокала */
+.fly-glass {
+    position: fixed;
+    font-size: 30px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 500;
+    transition: all 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform, opacity;
+}
+
+/* Кнопка "Наверх" */
 .scroll-top {
-    position: fixed; right: 16px; bottom: 160px;
+    position: fixed; right: 16px; bottom: 130px;
     width: 44px; height: 44px; border-radius: 50%;
     background: #2c2c2c; color: #ffffff; border: none;
-    font-size: 20px; cursor: pointer;
-    display: none; align-items: center; justify-content: center;
+    font-size: 20px; cursor: pointer; display: none;
+    align-items: center; justify-content: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.25); z-index: 190;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-    opacity: 0;
+    opacity: 0; transition: opacity 0.2s ease;
 }
 .scroll-top.visible { display: flex; opacity: 1; }
 .scroll-top:active { transform: scale(0.9); }
-.chips-bar {
+
+/* Чипсы снизу */
+.bottom-chips {
     position: fixed; bottom: 0; left: 0; right: 0;
-    z-index: 180;
-    background: rgba(255, 255, 255, 0.94);
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    display: flex; gap: 8px; padding: 10px 12px;
+    overflow-x: auto; scrollbar-width: none;
     border-top: 1px solid #eeeeee;
-    padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom));
-    overflow-x: auto; overflow-y: hidden; white-space: nowrap;
-    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+    z-index: 195;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
     transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
-.chips-bar::-webkit-scrollbar { display: none; }
-.chips-bar.with-cart { bottom: 70px; padding-bottom: 10px; }
-.chips { display: inline-flex; gap: 8px; padding-right: 12px; }
+.bottom-chips::-webkit-scrollbar { display: none; }
+.bottom-chips.hidden-by-cart { transform: translateY(100%); }
+
 .chip {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 8px 16px; border-radius: 20px;
-    border: 1px solid #e0e0e0; background: #ffffff; color: #2c2c2c;
-    font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
-    white-space: nowrap; cursor: pointer; font-family: inherit;
-    transition: all 0.2s ease;
+    flex-shrink: 0; padding: 7px 14px; border-radius: 20px;
+    border: 1px solid #eeeeee; background: #ffffff;
+    font-size: 12px; color: #666666; cursor: pointer;
+    white-space: nowrap; font-family: inherit; font-weight: 500;
+    transition: all 0.15s ease;
 }
-.chip:active { transform: scale(0.94); background: #f5f5f5; }
+.chip:active { transform: scale(0.95); background: #f0f0f0; }
 .chip.active { background: #2c2c2c; color: #ffffff; border-color: #2c2c2c; }
+
+/* Корзина */
 .cart-bar {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: #2c2c2c; color: #ffffff;
-    padding: 14px 18px; padding-bottom: max(14px, env(safe-area-inset-bottom));
+    padding: 14px 18px;
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
     display: flex; justify-content: space-between; align-items: center;
     z-index: 200; border-radius: 18px 18px 0 0;
-    box-shadow: 0 -6px 24px rgba(0,0,0,0.2); cursor: pointer;
-    transform: translateY(110%);
+    box-shadow: 0 -6px 24px rgba(0,0,0,0.2);
+    cursor: pointer; transform: translateY(110%);
     transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 .cart-bar.visible { transform: translateY(0); }
-.cart-bar-info { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 500; }
+.cart-bar-info {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 14px; font-weight: 500;
+}
 .cart-bar-icon { font-size: 18px; display: inline-block; }
 .cart-bar-sum { color: #cccccc; font-weight: 400; font-size: 13px; }
-.cart-bar-count { background: #ffffff; color: #2c2c2c; border-radius: 50%; min-width: 22px; height: 22px; padding: 0 6px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
-.cart-bar-button { background: #ffffff; color: #2c2c2c; padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+.cart-bar-count {
+    background: #ffffff; color: #2c2c2c; border-radius: 50%;
+    min-width: 22px; height: 22px; padding: 0 6px;
+    font-size: 12px; font-weight: 700;
+    display: inline-flex; align-items: center; justify-content: center;
+}
+.cart-bar-button {
+    background: #ffffff; color: #2c2c2c;
+    padding: 7px 16px; border-radius: 8px;
+    font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* Модалка */
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5);
     z-index: 300; display: none; align-items: flex-end; justify-content: center;
@@ -180,22 +261,60 @@ body {
     overflow-y: auto;
     animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
-@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 14px; border-bottom: 1px solid #eeeeee; }
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+.modal-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding-bottom: 14px;
+    border-bottom: 1px solid #eeeeee;
+}
 .modal-title { font-size: 17px; font-weight: 600; }
-.modal-close { background: none; border: none; font-size: 26px; color: #999999; cursor: pointer; padding: 0; line-height: 1; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; }
-.cart-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #f5f5f5; gap: 12px; }
+.modal-close {
+    background: none; border: none; font-size: 26px; color: #999999;
+    cursor: pointer; padding: 0; line-height: 1;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+}
+.cart-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid #f5f5f5; gap: 12px;
+}
 .cart-item:last-child { border-bottom: none; }
 .cart-item-info { flex-grow: 1; min-width: 0; }
-.cart-item-name { font-size: 14px; font-weight: 500; color: #2c2c2c; word-break: break-word; }
+.cart-item-name {
+    font-size: 14px; font-weight: 500; color: #2c2c2c;
+    word-break: break-word;
+}
 .cart-item-price { font-size: 12px; color: #888888; margin-top: 2px; }
-.cart-item-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.cart-item-qty { font-size: 14px; font-weight: 600; min-width: 22px; text-align: center; }
-.cart-item-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid #dddddd; background: #ffffff; font-size: 15px; color: #2c2c2c; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; line-height: 1; font-family: inherit; }
+.cart-item-controls {
+    display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.cart-item-qty {
+    font-size: 14px; font-weight: 600;
+    min-width: 22px; text-align: center;
+}
+.cart-item-btn {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 1px solid #dddddd; background: #ffffff;
+    font-size: 15px; color: #2c2c2c; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0; line-height: 1; font-family: inherit;
+}
 .cart-item-btn:active { background: #f0f0f0; }
-.modal-total { margin-top: 16px; padding-top: 14px; border-top: 1px solid #eeeeee; display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600; }
+.modal-total {
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid #eeeeee;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 15px; font-weight: 600;
+}
 .modal-actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
-.modal-btn { flex: 1 1 100%; padding: 14px; border-radius: 10px; border: none; font-size: 13px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px; font-family: inherit; }
+.modal-btn {
+    flex: 1 1 100%; padding: 14px; border-radius: 10px;
+    border: none; font-size: 13px; font-weight: 600;
+    cursor: pointer; letter-spacing: 0.5px; font-family: inherit;
+}
 .modal-btn-row { display: flex; gap: 10px; flex: 1 1 100%; }
 .modal-btn-row .modal-btn { flex: 1; }
 .modal-btn-clear { background: #f5f5f5; color: #c0392b; }
@@ -204,34 +323,83 @@ body {
 .modal-btn-close:active { background: #444444; }
 .modal-btn-show { background: #a8c9b0; color: #1f3a26; }
 .modal-btn-show:active { background: #8fb89a; }
-.cart-empty { text-align: center; color: #999999; font-size: 14px; padding: 40px 0; }
-.barmen-modal { background: #ffffff; width: 100%; max-width: 600px; border-radius: 20px 20px 0 0; padding: 24px 20px; padding-bottom: max(24px, env(safe-area-inset-bottom)); animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1); }
-.barmen-title { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: #999999; text-align: center; margin-bottom: 20px; }
-.barmen-list { font-family: 'Courier New', monospace; font-size: 20px; line-height: 1.6; color: #2c2c2c; }
-.barmen-item { display: flex; justify-content: space-between; align-items: baseline; padding: 8px 0; border-bottom: 1px dashed #eeeeee; }
-.barmen-item:last-child { border-bottom: none; }
-.barmen-item-name { font-weight: 600; }
-.barmen-item-qty { font-size: 24px; font-weight: 700; color: #2c2c2c; }
-.barmen-total { margin-top: 20px; padding-top: 16px; border-top: 2px solid #2c2c2c; display: flex; justify-content: space-between; font-size: 20px; font-weight: 700; }
-.barmen-btn { margin-top: 24px; width: 100%; padding: 16px; border-radius: 12px; border: none; background: #2c2c2c; color: #ffffff; font-size: 15px; font-weight: 600; cursor: pointer; letter-spacing: 0.5px; font-family: inherit; }
+.cart-empty {
+    text-align: center; color: #999999;
+    font-size: 14px; padding: 40px 0;
+}
+
+/* Модалка QR-кода */
+.barmen-modal {
+    background: #ffffff; width: 100%; max-width: 600px;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+    animation: slideUp 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+    text-align: center;
+}
+.barmen-title {
+    font-size: 14px; text-transform: uppercase;
+    letter-spacing: 2px; color: #999999;
+    margin-bottom: 20px;
+}
+#qrcode {
+    display: flex; justify-content: center;
+    padding: 10px 0;
+}
+#qrcode img, #qrcode canvas {
+    border-radius: 8px;
+}
+#barmenText {
+    font-size: 12px; color: #999999;
+    text-align: center; margin-top: 14px;
+    white-space: pre-line; line-height: 1.5;
+    font-family: 'Courier New', monospace;
+}
+.barmen-btn {
+    margin-top: 24px; width: 100%; padding: 16px;
+    border-radius: 12px; border: none;
+    background: #2c2c2c; color: #ffffff;
+    font-size: 15px; font-weight: 600;
+    cursor: pointer; letter-spacing: 0.5px; font-family: inherit;
+}
 .barmen-btn:active { background: #444444; }
-.toast { position: fixed; bottom: 180px; left: 50%; transform: translateX(-50%) translateY(20px); background: #2c2c2c; color: #ffffff; padding: 12px 20px; border-radius: 10px; font-size: 13px; z-index: 400; opacity: 0; pointer-events: none; transition: opacity 0.3s ease, transform 0.3s ease; white-space: nowrap; }
+
+/* Уведомление */
+.toast {
+    position: fixed; bottom: 160px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: #2c2c2c; color: #ffffff;
+    padding: 12px 20px; border-radius: 10px;
+    font-size: 13px; z-index: 400;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    white-space: nowrap;
+}
 .toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
-.flying-shot { position: fixed; z-index: 500; font-size: 30px; pointer-events: none; will-change: transform, opacity; transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1; transition: transform 0.7s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.7s ease-in; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15)); }
+
+/* Десктоп */
 @media (min-width: 700px) {
     .logo-wrap { padding: 24px 20px 12px 20px; }
     .logo-wrap .logo { height: 120px; }
     .search-row { padding: 10px 20px; }
-    .category-section { padding: 0 20px; max-width: 1100px; margin: 0 auto; }
-    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+    .category-section {
+        padding: 0 20px; max-width: 1100px; margin: 0 auto;
+    }
+    .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 12px;
+    }
     .card { padding: 18px; border-radius: 16px; }
     .card .name { font-size: 16px; }
     .card .price { font-size: 16px; }
     .card .description { font-size: 13px; }
-    .category-header { font-size: 13px; letter-spacing: 4px; padding: 20px 4px; }
-    .scroll-top { right: 24px; bottom: 170px; }
+    .category-header {
+        font-size: 13px; letter-spacing: 4px; padding: 20px 4px;
+    }
+    .scroll-top { right: 24px; bottom: 140px; }
     .modal-btn-row { flex-wrap: nowrap; }
-    .chips-bar.with-cart { bottom: 66px; }
+    .bottom-chips { padding: 12px 20px; }
 }
 </style>
 </head>
@@ -243,8 +411,8 @@ body {
     </div>
 
     <div class="hint">
-        <strong>Нажмите на карточку</strong>, чтобы добавить настойку в корзину.<br>
-        Открыть заказ можно в панели внизу.
+        <strong>Нажмите на настойку</strong> — она добавится в корзину.<br>
+        <em>В корзине</em> можно проверить заказ и показать его бармену.
     </div>
 
     <div class="search-row">
@@ -257,13 +425,11 @@ body {
 
     <button class="scroll-top" id="scrollTop" aria-label="Наверх">↑</button>
 
-    <div class="chips-bar" id="chipsBar">
-        <div class="chips" id="chips"></div>
-    </div>
+    <div class="bottom-chips" id="bottomChips"></div>
 
     <div class="cart-bar" id="cartBar">
         <div class="cart-bar-info">
-            <span class="cart-bar-icon" id="cartBarIcon">🛒</span>
+            <span class="cart-bar-icon">🛒</span>
             <span class="cart-bar-count" id="cartBarCount">0</span>
             <span class="cart-bar-sum" id="cartBarSum"></span>
         </div>
@@ -273,7 +439,7 @@ body {
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
-                <div class="modal-title">🛒 Корзина</div>
+                <div class="modal-title">Корзина</div>
                 <button class="modal-close" id="modalClose">×</button>
             </div>
             <div id="cartItems"></div>
@@ -290,12 +456,15 @@ body {
 
     <div class="modal-overlay" id="barmenOverlay">
         <div class="barmen-modal">
-            <div class="barmen-title">Заказ бармену</div>
-            <div class="barmen-list" id="barmenList"></div>
-            <button class="barmen-btn" id="barmenCloseBtn">Готово</button>
+            <div class="barmen-title">Покажите QR-код бармену</div>
+            <div id="qrcode"></div>
+            <div id="barmenText"></div>
+            <button class="barmen-btn" id="barmenCloseBtn">Закрыть</button>
         </div>
     </div>
-<script type="module">
+
+    <div class="toast" id="toast"></div>
+    <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getFirestore, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
@@ -314,21 +483,13 @@ const db = getFirestore(app);
 
 const appDiv = document.getElementById('app');
 const searchInput = document.getElementById('searchInput');
-const chipsBar = document.getElementById('chipsBar');
-const chipsContainer = document.getElementById('chips');
+const bottomChips = document.getElementById('bottomChips');
 const categoryOrder = ["Фруктовые", "Ягодные", "Сливочные", "Овощные", "Эксперименты"];
 
 const cart = {};
 const cardElements = {};
 const tinctureData = {};
 const collapsedCategories = new Set();
-
-// Состояние рандома: для каждой категории — Set имён «выпавших» карточек
-const randomPicks = {};
-// Категории, где пользователь нажал «Показать всё»
-const allShownCategories = new Set();
-
-let isFirstRender = true;
 
 // Восстановление корзины
 try {
@@ -352,46 +513,54 @@ function formatPrice(price) {
     return price + ' ₽';
 }
 
+// Toast
 let toastTimeout;
 function showToast(text) {
     const toast = document.getElementById('toast');
     toast.textContent = text;
     toast.classList.add('visible');
     clearTimeout(toastTimeout);
-    toastTimeout = setTimeout(function() { toast.classList.remove('visible'); }, 2000);
+    toastTimeout = setTimeout(function() {
+        toast.classList.remove('visible');
+    }, 2000);
 }
 
-function flyShotToCart(fromEl) {
-    const cartIcon = document.getElementById('cartBarIcon');
-    if (!cartIcon || !fromEl) return;
-    const startRect = fromEl.getBoundingClientRect();
-    const endRect = cartIcon.getBoundingClientRect();
-    const startX = startRect.left + startRect.width / 2;
-    const startY = startRect.top + startRect.height / 2;
-    const endX = endRect.left + endRect.width / 2;
-    const endY = endRect.top + endRect.height / 2;
-
-    const el = document.createElement('div');
-    el.className = 'flying-shot';
-    el.textContent = '🍷';
-    el.style.left = (startX - 15) + 'px';
-    el.style.top = (startY - 15) + 'px';
-    document.body.appendChild(el);
-    void el.offsetWidth;
-
-    el.style.transform = 'translate(' + (endX - startX) + 'px, ' + (endY - startY) + 'px) scale(0.5) rotate(25deg)';
-    el.style.opacity = '0.1';
-    setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 750);
+// Анимация бокала
+function flyGlass(fromElement) {
+    const cartBar = document.getElementById('cartBar');
+    if (!cartBar || !cartBar.classList.contains('visible')) return;
+    
+    const fromRect = fromElement.getBoundingClientRect();
+    const toRect = cartBar.querySelector('.cart-bar-icon').getBoundingClientRect();
+    
+    const glass = document.createElement('div');
+    glass.className = 'fly-glass';
+    glass.textContent = '🍷';
+    glass.style.left = fromRect.left + fromRect.width / 2 - 15 + 'px';
+    glass.style.top = fromRect.top + fromRect.height / 2 - 15 + 'px';
+    glass.style.transform = 'scale(1)';
+    glass.style.opacity = '1';
+    
+    document.body.appendChild(glass);
+    void glass.offsetWidth;
+    
+    glass.style.left = (toRect.left + toRect.width / 2 - 15) + 'px';
+    glass.style.top = (toRect.top + toRect.height / 2 - 15) + 'px';
+    glass.style.transform = 'scale(0.3)';
+    glass.style.opacity = '0';
+    
+    setTimeout(function() { glass.remove(); }, 750);
 }
 
-function addToCart(name, fromEl) {
+// Корзина
+function addToCart(name, sourceElement) {
     const t = tinctureData[name];
     if (!t || !t.isAvailable) return;
+    if (sourceElement) flyGlass(sourceElement);
     if (!cart[name]) cart[name] = { name: name, price: t.price, qty: 0 };
     cart[name].qty += 1;
     saveCart();
     updateCartUI(name);
-    if (fromEl) flyShotToCart(fromEl);
 }
 
 function removeFromCart(name) {
@@ -441,15 +610,18 @@ function updateCartUI(pulseName) {
     const totalQty = Object.values(cart).reduce(function(s, i) { return s + i.qty; }, 0);
     const totalSum = Object.values(cart).reduce(function(s, i) { return s + (i.price || 0) * i.qty; }, 0);
     const bar = document.getElementById('cartBar');
+    const chips = document.getElementById('bottomChips');
+    
     if (totalQty > 0) {
         bar.classList.add('visible');
-        chipsBar.classList.add('with-cart');
+        chips.classList.add('hidden-by-cart');
         document.getElementById('cartBarCount').textContent = totalQty;
         document.getElementById('cartBarSum').textContent = totalSum > 0 ? '· ' + totalSum + ' ₽' : '';
     } else {
         bar.classList.remove('visible');
-        chipsBar.classList.remove('with-cart');
+        chips.classList.remove('hidden-by-cart');
     }
+
     renderCartItems();
 }
 
@@ -465,10 +637,12 @@ function renderCartItems() {
         showBtn.style.display = 'none';
         return;
     }
+
     showBtn.style.display = '';
 
     let html = '';
     let total = 0;
+
     items.forEach(function(item) {
         const itemTotal = (item.price || 0) * item.qty;
         total += itemTotal;
@@ -484,6 +658,7 @@ function renderCartItems() {
             '</div>' +
             '</div>';
     });
+
     container.innerHTML = html;
     totalEl.innerHTML = total > 0 ? '<span>Итого:</span><span>' + total + ' ₽</span>' : '';
 
@@ -491,67 +666,63 @@ function renderCartItems() {
         btn.addEventListener('click', function(e) {
             e.stopPropagation();
             const n = btn.dataset.name;
-            if (btn.dataset.action === 'plus') addToCart(n, null);
+            if (btn.dataset.action === 'plus') addToCart(n);
             else removeFromCart(n);
         });
     });
 }
 
-// Поиск: ищет по ВСЕМУ меню, игнорируя рандом
 function applyFilters() {
     const query = searchInput.value.toLowerCase().trim();
-
     document.querySelectorAll('.category-section').forEach(function(section) {
-        const cat = section.dataset.cat;
         const cards = section.querySelectorAll('.card');
         let anyVisible = false;
-
         cards.forEach(function(card) {
             const name = (card.dataset.name || '').toLowerCase();
-            const matchesSearch = !query || name.indexOf(query) !== -1;
-            const allowedByRandom = allShownCategories.has(cat) || (randomPicks[cat] && randomPicks[cat].has(card.dataset.name));
-
-            if (query) {
-                card.classList.toggle('hidden-by-random', !matchesSearch);
-            } else {
-                card.classList.toggle('hidden-by-random', !allowedByRandom);
-            }
-            if (!card.classList.contains('hidden-by-random')) anyVisible = true;
+            const show = !query || name.indexOf(query) !== -1;
+            card.style.display = show ? '' : 'none';
+            if (show) anyVisible = true;
         });
-
-        // Скрываем кнопку «Показать всё» при поиске
-        const showAllBtn = section.querySelector('.show-all-btn');
-        if (showAllBtn) showAllBtn.classList.toggle('hidden', !!query);
-
         section.classList.toggle('hidden', !anyVisible);
     });
 }
 
 searchInput.addEventListener('input', applyFilters);
 
+// Кнопка "Наверх"
 const scrollTopBtn = document.getElementById('scrollTop');
 window.addEventListener('scroll', function() {
     if (window.scrollY > 300) scrollTopBtn.classList.add('visible');
     else scrollTopBtn.classList.remove('visible');
 }, { passive: true });
-
 scrollTopBtn.addEventListener('click', function() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
+// Поделиться
 document.getElementById('shareBtn').addEventListener('click', async function() {
-    const shareData = { title: 'Меню настоек', text: 'Посмотри, какие настойки у нас есть!', url: window.location.href };
+    const shareData = {
+        title: 'Меню настоек',
+        text: 'Посмотри, какие настойки у нас есть!',
+        url: window.location.href
+    };
     try {
-        if (navigator.share) { await navigator.share(shareData); }
-        else { await navigator.clipboard.writeText(window.location.href); showToast('Ссылка скопирована!'); }
+        if (navigator.share) await navigator.share(shareData);
+        else {
+            await navigator.clipboard.writeText(window.location.href);
+            showToast('Ссылка скопирована!');
+        }
     } catch (err) {
         if (err.name !== 'AbortError') {
-            try { await navigator.clipboard.writeText(window.location.href); showToast('Ссылка скопирована!'); }
-            catch (e) { showToast('Не удалось скопировать'); }
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                showToast('Ссылка скопирована!');
+            } catch (e) { showToast('Не удалось скопировать'); }
         }
     }
 });
 
+// Модалки
 document.getElementById('cartBar').addEventListener('click', function() {
     document.getElementById('modalOverlay').classList.add('visible');
 });
@@ -569,22 +740,38 @@ document.getElementById('clearBtn').addEventListener('click', function() {
     if (confirm('Очистить всю корзину?')) clearCart();
 });
 
+// QR-код
 document.getElementById('showBarmenBtn').addEventListener('click', function() {
     const items = Object.values(cart);
     if (items.length === 0) return;
-    const listEl = document.getElementById('barmenList');
-    let html = '';
+
+    let orderText = 'ЗАКАЗ:\n\n';
     let total = 0;
     items.forEach(function(item) {
         const itemTotal = (item.price || 0) * item.qty;
         total += itemTotal;
-        html += '<div class="barmen-item"><span class="barmen-item-name">' + item.name + '</span><span class="barmen-item-qty">× ' + item.qty + '</span></div>';
+        orderText += item.name + ' × ' + item.qty + '\n';
     });
-    listEl.innerHTML = html;
-    if (total > 0) listEl.innerHTML += '<div class="barmen-total"><span>Итого:</span><span>' + total + ' ₽</span></div>';
+    if (total > 0) orderText += '\nИТОГО: ' + total + ' ₽';
+
+    const qrContainer = document.getElementById('qrcode');
+    qrContainer.innerHTML = '';
+
+    new QRCode(qrContainer, {
+        text: orderText,
+        width: 260,
+        height: 260,
+        colorDark: '#2c2c2c',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+    });
+
+    document.getElementById('barmenText').textContent = orderText;
+
     document.getElementById('modalOverlay').classList.remove('visible');
     document.getElementById('barmenOverlay').classList.add('visible');
 });
+
 document.getElementById('barmenCloseBtn').addEventListener('click', function() {
     document.getElementById('barmenOverlay').classList.remove('visible');
 });
@@ -592,31 +779,12 @@ document.getElementById('barmenOverlay').addEventListener('click', function(e) {
     if (e.target.id === 'barmenOverlay') e.currentTarget.classList.remove('visible');
 });
 
-function scrollToCategory(cat) {
-    const section = document.querySelector('.category-section[data-cat="' + cat + '"]');
-    if (!section) return;
-    if (section.classList.contains('collapsed')) {
-        section.classList.remove('collapsed');
-        collapsedCategories.delete(cat);
-    }
-    const searchHeight = 54;
-    const y = section.getBoundingClientRect().top + window.scrollY - searchHeight - 4;
-    window.scrollTo({ top: y, behavior: 'smooth' });
-    setActiveChip(cat);
-}
-
-function setActiveChip(cat) {
-    chipsContainer.querySelectorAll('.chip').forEach(function(chip) {
-        chip.classList.toggle('active', chip.dataset.cat === cat);
-    });
-    const active = chipsContainer.querySelector('.chip.active');
-    if (active) active.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-}
-
+// Firebase
 onSnapshot(collection(db, "tinctures"), function(snapshot) {
     appDiv.innerHTML = '';
     Object.keys(cardElements).forEach(function(k) { delete cardElements[k]; });
     Object.keys(tinctureData).forEach(function(k) { delete tinctureData[k]; });
+    bottomChips.innerHTML = '';
 
     if (snapshot.empty) {
         appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
@@ -642,6 +810,7 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         if (!grouped[t.category]) grouped[t.category] = [];
         grouped[t.category].push(t);
     });
+
     Object.keys(grouped).forEach(function(cat) {
         grouped[cat].sort(function(a, b) {
             if (a.isAvailable === b.isAvailable) return a.name.localeCompare(b.name, 'ru');
@@ -654,66 +823,62 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
         if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
     });
 
-    if (isFirstRender) {
-        chipsContainer.innerHTML = '';
-        finalOrder.forEach(function(cat) {
-            if (!grouped[cat]) return;
-            const chip = document.createElement('button');
-            chip.className = 'chip';
-            chip.dataset.cat = cat;
-            chip.textContent = cat;
-            chip.addEventListener('click', function() { scrollToCategory(cat); });
-            chipsContainer.appendChild(chip);
+    // Чипсы снизу
+    finalOrder.forEach(function(cat) {
+        if (!grouped[cat]) return;
+        const chip = document.createElement('button');
+        chip.className = 'chip';
+        chip.dataset.cat = cat;
+        chip.textContent = cat;
+        chip.addEventListener('click', function() {
+            const target = document.querySelector('.category-section[data-cat="' + cat + '"]');
+            if (!target) return;
+            const offset = 100;
+            const top = target.getBoundingClientRect().top + window.scrollY - offset;
+            window.scrollTo({ top: top, behavior: 'smooth' });
         });
-    }
+        bottomChips.appendChild(chip);
+    });
 
+    // Секции
     finalOrder.forEach(function(cat) {
         if (!grouped[cat]) return;
 
         const section = document.createElement('div');
-        section.className = 'category-section';
+        section.className = 'category-section collapsed';
         section.dataset.cat = cat;
-
-        // На первом рендере — категории РАСКРЫТЫ
-        if (!isFirstRender && collapsedCategories.has(cat)) {
-            section.classList.add('collapsed');
-        }
 
         const header = document.createElement('h2');
         header.className = 'category-header';
         header.innerHTML = '<span>' + cat + '</span><span class="arrow">▼</span>';
         header.addEventListener('click', function() {
             section.classList.toggle('collapsed');
-            if (section.classList.contains('collapsed')) collapsedCategories.add(cat);
-            else collapsedCategories.delete(cat);
         });
         section.appendChild(header);
+
+        // Превью 3 случайных настоек (только для свёрнутых)
+        const shuffled = grouped[cat].slice().sort(function() { return Math.random() - 0.5; });
+        const previewNames = shuffled.slice(0, 3).map(function(t) { return t.name; });
+        if (previewNames.length > 0) {
+            const preview = document.createElement('div');
+            preview.className = 'preview-list';
+            previewNames.forEach(function(name) {
+                const item = document.createElement('span');
+                item.className = 'preview-item';
+                item.textContent = name;
+                preview.appendChild(item);
+            });
+            section.appendChild(preview);
+        }
 
         const cardsWrap = document.createElement('div');
         cardsWrap.className = 'cards';
 
-        const categoryItems = grouped[cat];
-
-        // Рандом: до 3 доступных (добираем недоступными), один раз на категорию
-        if (!randomPicks[cat]) {
-            const available = categoryItems.filter(function(t) { return t.isAvailable; });
-            const unavailable = categoryItems.filter(function(t) { return !t.isAvailable; });
-            const shuffledAvail = available.slice().sort(function() { return Math.random() - 0.5; });
-            const shuffledUnavail = unavailable.slice().sort(function() { return Math.random() - 0.5; });
-            const picked = shuffledAvail.slice(0, 3);
-            if (picked.length < 3) picked.push.apply(picked, shuffledUnavail.slice(0, 3 - picked.length));
-            randomPicks[cat] = new Set(picked.map(function(t) { return t.name; }));
-        }
-
-        const allShown = allShownCategories.has(cat);
-        if (allShown) section.classList.add('all-shown');
-
-        categoryItems.forEach(function(t) {
+        grouped[cat].forEach(function(t) {
             const card = document.createElement('div');
             card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
             card.dataset.name = t.name;
             card.dataset.available = t.isAvailable ? 'true' : 'false';
-            if (!allShown && !randomPicks[cat].has(t.name)) card.classList.add('hidden-by-random');
 
             const descriptionHtml = t.description ? '<div class="description">' + t.description + '</div>' : '';
             const priceHtml = t.price ? '<div class="price">' + formatPrice(t.price) + '</div>' : '';
@@ -730,41 +895,22 @@ onSnapshot(collection(db, "tinctures"), function(snapshot) {
                 '</div>';
 
             cardElements[t.name] = card;
+
             card.addEventListener('click', function(e) {
                 if (!t.isAvailable) return;
                 if (e.target.closest('.qty-btn')) return;
                 addToCart(t.name, card);
             });
+
             cardsWrap.appendChild(card);
         });
 
         section.appendChild(cardsWrap);
-
-        // Кнопка «Показать всё»
-        const hiddenCount = categoryItems.length - randomPicks[cat].size;
-        if (hiddenCount > 0 && !allShown) {
-            const btn = document.createElement('button');
-            btn.className = 'show-all-btn';
-            btn.innerHTML = 'Показать все <span class="show-all-count">(' + categoryItems.length + ')</span>';
-            btn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                allShownCategories.add(cat);
-                section.classList.add('all-shown');
-                section.querySelectorAll('.card.hidden-by-random').forEach(function(c) {
-                    c.classList.remove('hidden-by-random');
-                });
-                btn.remove();
-            });
-            section.appendChild(btn);
-        }
-
         appDiv.appendChild(section);
     });
 
-    isFirstRender = false;
     updateCartUI();
 });
 </script>
 </body>
 </html>
-    <div class="toast" id="toast"></div>
