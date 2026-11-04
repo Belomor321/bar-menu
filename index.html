@@ -117,7 +117,6 @@ body {
     font-size: 14px; font-weight: 600; color: #2c2c2c;
 }
 
-/* Блок счётчика в ленте — появляется после первого тапа */
 .h-scroll-card .h-counter {
     display: none;
     align-items: center;
@@ -573,7 +572,6 @@ const cart = {};
 const cardElements = {};
 const tinctureData = {};
 const collapsedCategories = new Set();
-const autoScrollIntervals = {};
 
 try {
     const saved = localStorage.getItem('bar_cart');
@@ -664,7 +662,6 @@ function updateCartUI(pulseName) {
         
         cards.forEach(function(card) {
             if (card.classList.contains('h-scroll-card')) {
-                // Компактная карточка в ленте
                 const counter = card.querySelector('.h-counter');
                 if (qty > 0) {
                     card.classList.add('selected');
@@ -692,7 +689,6 @@ function updateCartUI(pulseName) {
                     if (counter) counter.innerHTML = '';
                 }
             } else {
-                // Полная карточка
                 const controls = card.querySelector('.card-controls');
                 if (!controls) return;
                 
@@ -888,255 +884,177 @@ document.getElementById('barmenOverlay').addEventListener('click', function(e) {
     if (e.target.id === 'barmenOverlay') e.currentTarget.classList.remove('visible');
 });
 
-// === FIREBASE ===
-onSnapshot(collection(db, "tinctures"), function(snapshot) {
-    Object.keys(autoScrollIntervals).forEach(function(k) {
-        clearInterval(autoScrollIntervals[k]);
-        delete autoScrollIntervals[k];
-    });
-    
-    appDiv.innerHTML = '';
-    Object.keys(cardElements).forEach(function(k) { delete cardElements[k]; });
-    Object.keys(tinctureData).forEach(function(k) { delete tinctureData[k]; });
-    bottomChips.innerHTML = '';
+onSnapshot(collection(db, "tinctures"), 
+    function(snapshot) {
+        appDiv.innerHTML = '';
+        Object.keys(cardElements).forEach(function(k) { delete cardElements[k]; });
+        Object.keys(tinctureData).forEach(function(k) { delete tinctureData[k]; });
+        bottomChips.innerHTML = '';
 
-    if (snapshot.empty) {
-        appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
-        return;
-    }
-
-    const allTinctures = [];
-    snapshot.forEach(function(docSnap) {
-        const data = docSnap.data();
-        const t = {
-            name: data.name,
-            isAvailable: data.isAvailable,
-            description: data.description || '',
-            price: data.price,
-            category: data.category || 'Прочее'
-        };
-        allTinctures.push(t);
-        tinctureData[t.name] = t;
-    });
-
-    const grouped = {};
-    allTinctures.forEach(function(t) {
-        if (!grouped[t.category]) grouped[t.category] = [];
-        grouped[t.category].push(t);
-    });
-
-    Object.keys(grouped).forEach(function(cat) {
-        grouped[cat].sort(function(a, b) {
-            if (a.isAvailable === b.isAvailable) return a.name.localeCompare(b.name, 'ru');
-            return a.isAvailable ? -1 : 1;
-        });
-    });
-
-    const finalOrder = categoryOrder.slice();
-    Object.keys(grouped).forEach(function(cat) {
-        if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
-    });
-
-    finalOrder.forEach(function(cat) {
-        if (!grouped[cat]) return;
-        const chip = document.createElement('button');
-        chip.className = 'chip';
-        chip.dataset.cat = cat;
-        chip.textContent = cat;
-        chip.addEventListener('click', function() {
-            const target = document.querySelector('.category-section[data-cat="' + cat + '"]');
-            if (!target) return;
-            const offset = 100;
-            const top = target.getBoundingClientRect().top + window.scrollY - offset;
-            window.scrollTo({ top: top, behavior: 'smooth' });
-        });
-        bottomChips.appendChild(chip);
-    });
-
-    function createCard(t) {
-        const card = document.createElement('div');
-        card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
-        card.dataset.name = t.name;
-        card.dataset.available = t.isAvailable ? 'true' : 'false';
-
-        const descriptionHtml = t.description ? '<div class="description">' + t.description + '</div>' : '';
-        const priceHtml = t.price ? '<div class="price">' + formatPrice(t.price) + '</div>' : '';
-        const statusText = t.isAvailable ? 'В наличии' : 'Закончилась';
-
-        card.innerHTML = '<div class="card-top">' +
-            '<div class="name">' + t.name + '</div>' +
-            priceHtml +
-            '</div>' +
-            descriptionHtml +
-            '<div class="card-bottom">' +
-            '<div class="status"><span class="dot"></span>' + statusText + '</div>' +
-            '<div class="card-controls"></div>' +
-            '</div>';
-
-        card.addEventListener('click', function(e) {
-            if (!t.isAvailable) return;
-            if (e.target.closest('.qty-btn')) return;
-            addToCart(t.name, card);
-        });
-
-        return card;
-    }
-
-    function createHScrollCard(t) {
-        const card = document.createElement('div');
-        card.className = 'h-scroll-card ' + (t.isAvailable ? 'available' : 'unavailable');
-        card.dataset.name = t.name;
-
-        const priceHtml = t.price ? '<div class="h-price">' + formatPrice(t.price) + '</div>' : '';
-
-        card.innerHTML = '<div class="h-name">' + t.name + '</div>' +
-            priceHtml +
-            '<div class="h-counter"></div>';
-
-        card.addEventListener('click', function(e) {
-            if (!t.isAvailable) return;
-            if (e.target.closest('.qty-btn')) return;
-            addToCart(t.name, card);
-        });
-
-        return card;
-    }
-
-    finalOrder.forEach(function(cat) {
-        if (!grouped[cat]) return;
-
-        const section = document.createElement('div');
-        section.className = 'category-section collapsed';
-        section.dataset.cat = cat;
-
-        const header = document.createElement('h2');
-        header.className = 'category-header';
-        header.innerHTML = '<div class="header-left">' +
-            '<span>' + cat + '</span>' +
-            '<span class="show-all-label">Показать все</span>' +
-            '</div>' +
-            '<span class="arrow">▼</span>';
-        header.addEventListener('click', function() {
-            section.classList.toggle('collapsed');
-            if (section.classList.contains('collapsed')) {
-                startAutoScroll(cat);
-            } else {
-                stopAutoScroll(cat);
-            }
-        });
-        section.appendChild(header);
-
-        const hScroll = document.createElement('div');
-        hScroll.className = 'horizontal-scroll';
-        hScroll.dataset.cat = cat;
-
-        grouped[cat].forEach(function(t) {
-            const hCard = createHScrollCard(t);
-            if (!cardElements[t.name]) cardElements[t.name] = [];
-            cardElements[t.name].push(hCard);
-            hScroll.appendChild(hCard);
-        });
-
-        const showAllCard = document.createElement('div');
-        showAllCard.className = 'show-all-card';
-        showAllCard.innerHTML = '<div class="all-icon">→</div><div class="all-text">Показать все настойки</div>';
-        showAllCard.addEventListener('click', function(e) {
-            e.stopPropagation();
-            section.classList.remove('collapsed');
-            stopAutoScroll(cat);
-        });
-        hScroll.appendChild(showAllCard);
-
-        section.appendChild(hScroll);
-
-        const cardsWrap = document.createElement('div');
-        cardsWrap.className = 'cards';
-
-        grouped[cat].forEach(function(t) {
-            const card = createCard(t);
-            if (!cardElements[t.name]) cardElements[t.name] = [];
-            cardElements[t.name].push(card);
-            cardsWrap.appendChild(card);
-        });
-
-        section.appendChild(cardsWrap);
-        appDiv.appendChild(section);
-    });
-
-    function startAutoScroll(cat) {
-        if (autoScrollIntervals[cat]) return;
-        const hScroll = document.querySelector('.horizontal-scroll[data-cat="' + cat + '"]');
-        if (!hScroll) return;
-        
-        let paused = false;
-        let state = 'forward'; // 'forward' | 'pauseEnd' | 'backward' | 'pauseStart'
-        let pauseUntil = 0;
-        
-        const pauseOn = function() { paused = true; };
-        const pauseOff = function() { 
-            setTimeout(function() { paused = false; }, 1500); 
-        };
-        hScroll.addEventListener('touchstart', pauseOn, { passive: true });
-        hScroll.addEventListener('touchend', pauseOff, { passive: true });
-        hScroll.addEventListener('mouseenter', pauseOn);
-        hScroll.addEventListener('mouseleave', pauseOff);
-        
-        autoScrollIntervals[cat] = setInterval(function() {
-            if (!document.body.contains(hScroll)) {
-                clearInterval(autoScrollIntervals[cat]);
-                delete autoScrollIntervals[cat];
-                return;
-            }
-            
-            if (paused) return;
-            
-            const maxScroll = hScroll.scrollWidth - hScroll.clientWidth;
-            if (maxScroll <= 0) return;
-            
-            const now = Date.now();
-            
-            if (state === 'forward') {
-                hScroll.scrollLeft += 1;
-                if (hScroll.scrollLeft >= maxScroll - 1) {
-                    state = 'pauseEnd';
-                    pauseUntil = now + 1500; // пауза в конце 1.5 сек
-                }
-            } else if (state === 'pauseEnd') {
-                if (now >= pauseUntil) {
-                    state = 'backward';
-                }
-            } else if (state === 'backward') {
-                hScroll.scrollLeft -= 24;
-                if (hScroll.scrollLeft <= 0) {
-                    hScroll.scrollLeft = 0;
-                    state = 'pauseStart';
-                    pauseUntil = now + 1000; // пауза в начале 1 сек
-                }
-            } else if (state === 'pauseStart') {
-                if (now >= pauseUntil) {
-                    state = 'forward';
-                }
-            }
-        }, 30);
-    }
-
-    function stopAutoScroll(cat) {
-        if (autoScrollIntervals[cat]) {
-            clearInterval(autoScrollIntervals[cat]);
-            delete autoScrollIntervals[cat];
+        if (snapshot.empty) {
+            appDiv.innerHTML = '<div class="loading">Пока нет данных...</div>';
+            return;
         }
-    }
 
-    setTimeout(function() {
-        finalOrder.forEach(function(cat) {
-            if (grouped[cat]) {
-                startAutoScroll(cat);
-            }
+        const allTinctures = [];
+        snapshot.forEach(function(docSnap) {
+            const data = docSnap.data();
+            const t = {
+                name: data.name,
+                isAvailable: data.isAvailable,
+                description: data.description || '',
+                price: data.price,
+                category: data.category || 'Прочее'
+            };
+            allTinctures.push(t);
+            tinctureData[t.name] = t;
         });
-    }, 500);
 
-    updateCartUI();
-});
+        const grouped = {};
+        allTinctures.forEach(function(t) {
+            if (!grouped[t.category]) grouped[t.category] = [];
+            grouped[t.category].push(t);
+        });
+
+        Object.keys(grouped).forEach(function(cat) {
+            grouped[cat].sort(function(a, b) {
+                if (a.isAvailable === b.isAvailable) return a.name.localeCompare(b.name, 'ru');
+                return a.isAvailable ? -1 : 1;
+            });
+        });
+
+        const finalOrder = categoryOrder.slice();
+        Object.keys(grouped).forEach(function(cat) {
+            if (finalOrder.indexOf(cat) === -1) finalOrder.push(cat);
+        });
+
+        finalOrder.forEach(function(cat) {
+            if (!grouped[cat]) return;
+            const chip = document.createElement('button');
+            chip.className = 'chip';
+            chip.dataset.cat = cat;
+            chip.textContent = cat;
+            chip.addEventListener('click', function() {
+                const target = document.querySelector('.category-section[data-cat="' + cat + '"]');
+                if (!target) return;
+                const offset = 100;
+                const top = target.getBoundingClientRect().top + window.scrollY - offset;
+                window.scrollTo({ top: top, behavior: 'smooth' });
+            });
+            bottomChips.appendChild(chip);
+        });
+
+        function createCard(t) {
+            const card = document.createElement('div');
+            card.className = 'card ' + (t.isAvailable ? 'available' : 'unavailable');
+            card.dataset.name = t.name;
+            card.dataset.available = t.isAvailable ? 'true' : 'false';
+
+            const descriptionHtml = t.description ? '<div class="description">' + t.description + '</div>' : '';
+            const priceHtml = t.price ? '<div class="price">' + formatPrice(t.price) + '</div>' : '';
+            const statusText = t.isAvailable ? 'В наличии' : 'Закончилась';
+
+            card.innerHTML = '<div class="card-top">' +
+                '<div class="name">' + t.name + '</div>' +
+                priceHtml +
+                '</div>' +
+                descriptionHtml +
+                '<div class="card-bottom">' +
+                '<div class="status"><span class="dot"></span>' + statusText + '</div>' +
+                '<div class="card-controls"></div>' +
+                '</div>';
+
+            card.addEventListener('click', function(e) {
+                if (!t.isAvailable) return;
+                if (e.target.closest('.qty-btn')) return;
+                addToCart(t.name, card);
+            });
+
+            return card;
+        }
+
+        function createHScrollCard(t) {
+            const card = document.createElement('div');
+            card.className = 'h-scroll-card ' + (t.isAvailable ? 'available' : 'unavailable');
+            card.dataset.name = t.name;
+
+            const priceHtml = t.price ? '<div class="h-price">' + formatPrice(t.price) + '</div>' : '';
+
+            card.innerHTML = '<div class="h-name">' + t.name + '</div>' +
+                priceHtml +
+                '<div class="h-counter"></div>';
+
+            card.addEventListener('click', function(e) {
+                if (!t.isAvailable) return;
+                if (e.target.closest('.qty-btn')) return;
+                addToCart(t.name, card);
+            });
+
+            return card;
+        }
+
+        finalOrder.forEach(function(cat) {
+            if (!grouped[cat]) return;
+
+            const section = document.createElement('div');
+            section.className = 'category-section collapsed';
+            section.dataset.cat = cat;
+
+            const header = document.createElement('h2');
+            header.className = 'category-header';
+            header.innerHTML = '<div class="header-left">' +
+                '<span>' + cat + '</span>' +
+                '<span class="show-all-label">Показать все</span>' +
+                '</div>' +
+                '<span class="arrow">▼</span>';
+            header.addEventListener('click', function() {
+                section.classList.toggle('collapsed');
+            });
+            section.appendChild(header);
+
+            const hScroll = document.createElement('div');
+            hScroll.className = 'horizontal-scroll';
+            hScroll.dataset.cat = cat;
+
+            grouped[cat].forEach(function(t) {
+                const hCard = createHScrollCard(t);
+                if (!cardElements[t.name]) cardElements[t.name] = [];
+                cardElements[t.name].push(hCard);
+                hScroll.appendChild(hCard);
+            });
+
+            const showAllCard = document.createElement('div');
+            showAllCard.className = 'show-all-card';
+            showAllCard.innerHTML = '<div class="all-icon">→</div><div class="all-text">Показать все настойки</div>';
+            showAllCard.addEventListener('click', function(e) {
+                e.stopPropagation();
+                section.classList.remove('collapsed');
+            });
+            hScroll.appendChild(showAllCard);
+
+            section.appendChild(hScroll);
+
+            const cardsWrap = document.createElement('div');
+            cardsWrap.className = 'cards';
+
+            grouped[cat].forEach(function(t) {
+                const card = createCard(t);
+                if (!cardElements[t.name]) cardElements[t.name] = [];
+                cardElements[t.name].push(card);
+                cardsWrap.appendChild(card);
+            });
+
+            section.appendChild(cardsWrap);
+            appDiv.appendChild(section);
+        });
+
+        updateCartUI();
+    },
+    function(error) {
+        console.error("Ошибка загрузки настоек:", error);
+        appDiv.innerHTML = '<div class="loading">Не удалось загрузить меню. Обновите страницу.</div>';
+    }
+);
 </script>
 </body>
 </html>
