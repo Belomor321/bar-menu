@@ -100,7 +100,7 @@ body {
     cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     position: relative;
-    min-height: 160px;
+    min-height: 180px;
     height: auto;
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
@@ -146,29 +146,35 @@ body {
     min-height: 50px;
     max-height: 50px;
 }
+
+/* Фиксированное место для цены/счётчика */
 .h-scroll-card .h-price {
     font-size: 16px;
     font-weight: 700;
     color: #1a1a1a;
     letter-spacing: 0.2px;
     margin-top: auto;
-    padding-top: 6px;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    padding-top: 4px;
 }
-
 .h-scroll-card .h-counter {
     display: none;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px solid #f0f0f0;
+    margin-top: auto;
+    min-height: 40px;
+    padding-top: 4px;
+    border-top: 1px solid transparent;
 }
 .h-scroll-card.selected .h-price {
     display: none;
 }
 .h-scroll-card.selected .h-counter {
     display: flex;
+    border-top-color: #f0f0f0;
 }
 .h-scroll-card .h-counter .qty-btn {
     width: 30px;
@@ -201,7 +207,7 @@ body {
     text-align: center;
     transition: all 0.2s ease;
     gap: 8px;
-    min-height: 160px;
+    min-height: 180px;
 }
 .show-all-card:active { 
     transform: scale(0.97); 
