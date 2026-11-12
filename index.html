@@ -89,30 +89,44 @@ body {
 
 .h-scroll-card {
     flex-shrink: 0;
-    width: 160px;
+    width: 170px;
     background: #ffffff;
-    border: 1px solid #eeeeee;
-    border-radius: 14px;
-    padding: 14px 12px;
+    border: 1px solid #f0f0f0;
+    border-radius: 16px;
+    padding: 16px 14px 14px 14px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 6px;
     cursor: pointer;
-    transition: transform 0.15s ease, background 0.15s ease;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     position: relative;
-    min-height: 150px;
+    min-height: 160px;
     height: auto;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
-.h-scroll-card:active { transform: scale(0.98); background: #fafafa; }
+.h-scroll-card:active { 
+    transform: scale(0.98); 
+    background: #fafafa; 
+    border-color: #e5e5e5;
+}
 .h-scroll-card.unavailable { 
     background: #fafafa; 
     cursor: default; 
-    opacity: 0.4; 
+    opacity: 0.45;
+    box-shadow: none;
 }
-.h-scroll-card.selected { border-color: #2c2c2c; background: #fcfcfc; }
+.h-scroll-card.selected { 
+    border-color: #2c2c2c; 
+    background: #fcfcfc;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
 .h-scroll-card .h-name {
-    font-size: 16px; font-weight: 600; color: #2c2c2c;
-    line-height: 1.2; word-break: break-word;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    line-height: 1.25;
+    letter-spacing: 0.1px;
+    word-break: break-word;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -120,29 +134,35 @@ body {
     min-height: 38px;
 }
 .h-scroll-card .h-description {
-    font-size: 11px;
+    font-size: 12px;
     color: #999999;
-    line-height: 1.35;
-    font-style: italic;
+    line-height: 1.4;
+    font-style: normal;
     word-break: break-word;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 45px;
-    max-height: 45px;
+    min-height: 50px;
+    max-height: 50px;
 }
 .h-scroll-card .h-price {
-    font-size: 14px; font-weight: 600; color: #2c2c2c;
+    font-size: 16px;
+    font-weight: 700;
+    color: #1a1a1a;
+    letter-spacing: 0.2px;
     margin-top: auto;
+    padding-top: 6px;
 }
 
 .h-scroll-card .h-counter {
     display: none;
     align-items: center;
     justify-content: space-between;
-    gap: 4px;
-    margin-top: 4px;
+    gap: 6px;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid #f0f0f0;
 }
 .h-scroll-card.selected .h-price {
     display: none;
@@ -151,45 +171,53 @@ body {
     display: flex;
 }
 .h-scroll-card .h-counter .qty-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 15px;
+    width: 30px;
+    height: 30px;
+    font-size: 16px;
     flex-shrink: 0;
+    border-color: #e5e5e5;
 }
 .h-scroll-card .h-counter .qty-value {
     font-size: 15px;
     font-weight: 700;
-    min-width: 22px;
+    min-width: 24px;
     text-align: center;
     flex-grow: 1;
+    color: #1a1a1a;
 }
 
 .show-all-card {
     flex-shrink: 0;
-    width: 130px;
+    width: 140px;
     background: #fafafa;
-    border: 1px dashed #cccccc;
-    border-radius: 14px;
+    border: 1px dashed #d5d5d5;
+    border-radius: 16px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: 12px;
+    padding: 16px 12px;
     cursor: pointer;
     text-align: center;
     transition: all 0.2s ease;
-    gap: 6px;
+    gap: 8px;
+    min-height: 160px;
 }
-.show-all-card:active { transform: scale(0.97); background: #f0f0f0; }
+.show-all-card:active { 
+    transform: scale(0.97); 
+    background: #f0f0f0; 
+    border-color: #bbbbbb;
+}
 .show-all-card .all-icon {
-    font-size: 24px;
+    font-size: 22px;
     color: #999999;
+    line-height: 1;
 }
 .show-all-card .all-text {
-    font-size: 11px;
+    font-size: 12px;
     color: #666666;
     font-weight: 500;
-    line-height: 1.3;
+    line-height: 1.35;
 }
 
 .cards {
@@ -489,7 +517,7 @@ body {
         padding-left: 0;
         padding-right: 0;
     }
-    .h-scroll-card { width: 180px; }
+    .h-scroll-card { width: 190px; }
     .cards {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
