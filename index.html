@@ -96,11 +96,10 @@ body {
     padding: 16px 14px 14px 14px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
     cursor: pointer;
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
     position: relative;
-    min-height: 180px;
+    min-height: 190px;
     height: auto;
     box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     text-align: center;
@@ -121,6 +120,17 @@ body {
     background: #fcfcfc;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
+
+.h-scroll-card .h-body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-grow: 1;
+    gap: 6px;
+    min-height: 0;
+}
+
 .h-scroll-card .h-name {
     font-size: 15px;
     font-weight: 600;
@@ -132,8 +142,8 @@ body {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 38px;
     text-align: center;
+    width: 100%;
 }
 .h-scroll-card .h-description {
     font-size: 12px;
@@ -145,9 +155,8 @@ body {
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
-    min-height: 50px;
-    max-height: 50px;
     text-align: center;
+    width: 100%;
 }
 
 .h-scroll-card .h-price {
@@ -155,21 +164,19 @@ body {
     font-weight: 700;
     color: #1a1a1a;
     letter-spacing: 0.2px;
-    margin-top: auto;
     min-height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-top: 4px;
+    padding-top: 8px;
 }
 .h-scroll-card .h-counter {
     display: none;
     align-items: center;
     justify-content: space-between;
     gap: 6px;
-    margin-top: auto;
     min-height: 40px;
-    padding-top: 4px;
+    padding-top: 8px;
     border-top: 1px solid transparent;
 }
 .h-scroll-card.selected .h-price {
@@ -210,7 +217,7 @@ body {
     text-align: center;
     transition: all 0.2s ease;
     gap: 8px;
-    min-height: 180px;
+    min-height: 190px;
 }
 .show-all-card:active { 
     transform: scale(0.97); 
@@ -1037,8 +1044,10 @@ onSnapshot(collection(db, "tinctures"),
             const descriptionHtml = t.description ? '<div class="h-description">' + t.description + '</div>' : '';
             const priceHtml = t.price ? '<div class="h-price">' + formatPrice(t.price) + '</div>' : '';
 
-            card.innerHTML = '<div class="h-name">' + t.name + '</div>' +
+            card.innerHTML = '<div class="h-body">' +
+                '<div class="h-name">' + t.name + '</div>' +
                 descriptionHtml +
+                '</div>' +
                 priceHtml +
                 '<div class="h-counter"></div>';
 
